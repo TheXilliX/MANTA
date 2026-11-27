@@ -45,12 +45,13 @@ function home() {
 
 function program() {
   const items = lessons.map(chapter => '<li><a class="course-row" href="' + lessonLink('../', chapter.id) + '">' +
-    escapeHtml(chapter.title) + '</a></li>').join('');
+    escapeHtml(chapter.title) + '<span aria-hidden="true">↗</span></a></li>').join('');
   const main = '<main id="main" class="contents-page frame">' +
     '<header class="contents-heading"><p>Лиды из <span lang="en">Threads</span></p><h1>Оглавление</h1></header>' +
+    '<div class="contents-art" aria-hidden="true"><img src="../assets/art/contents-poster.webp" width="800" height="1200" alt="" fetchpriority="high"></div>' +
     '<nav aria-label="Уроки"><ul class="contents-list">' + items + '</ul></nav></main>';
   return page({base:'../', title:'Оглавление — Лиды из Threads', description:'Оглавление курса по Threads.',
-    content:main, classes:'program light', programPage:true});
+    content:main, classes:'program dark', programPage:true});
 }
 
 function lessonPage(chapter) {

@@ -6,7 +6,7 @@
   }
   [data-hero-intro][data-hero-reveal] .hero-copy h1 > span + span { animation-delay: .35s; }
   [data-hero-intro][data-hero-reveal] .hero-action {
-    animation: hero-control-in .44s ease-out .78s both;
+    animation: hero-control-in .46s cubic-bezier(.22,.64,.32,1) .78s both;
   }
   :root:has(body.program)::view-transition-group(root) {
     animation-duration: .72s;
@@ -28,13 +28,13 @@
 }
 
 @keyframes hero-curtain-in {
-  from { clip-path: inset(0 -.12em 100%); filter: blur(4px); transform: translateY(-.13em); }
-  to { clip-path: inset(-.15em); filter: blur(0); transform: translateY(0); }
+  from { clip-path: inset(-.16em -.16em 110%); opacity: 0; }
+  to { clip-path: inset(-.16em); opacity: 1; }
 }
 
 @keyframes hero-control-in {
-  from { visibility: hidden; opacity: 0; transform: translateY(.5rem); }
-  to { visibility: visible; opacity: 1; transform: translateY(0); }
+  from { visibility: hidden; opacity: 0; clip-path: inset(-.5rem -.5rem 100%); }
+  to { visibility: visible; opacity: 1; clip-path: inset(-.5rem); }
 }
 
 @keyframes home-recede {
@@ -48,3 +48,4 @@
   }
   to { clip-path: inset(0); transform: perspective(1400px) rotateY(0); }
 }
+@media (prefers-reduced-motion: reduce) { .slide-commit { transition: none; } }

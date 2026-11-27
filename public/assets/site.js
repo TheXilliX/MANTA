@@ -42,6 +42,7 @@
       drag = undefined;
       clearLight();
       slide.removeAttribute('data-slide-held');
+      slide.removeAttribute('data-slide-full');
       slide.style.setProperty('--slide-progress', '1');
       slide.setAttribute('data-slide-done', '');
       // Leave the confirmation on screen briefly before the native page transition.
@@ -53,6 +54,7 @@
       const distance = event.clientX - drag.x;
       const progress = Math.max(0, Math.min(1, distance / drag.travel));
       slide.style.setProperty('--slide-progress', String(progress));
+      slide.toggleAttribute('data-slide-full', progress === 1);
       if (event.type === 'pointerup' && distance >= drag.travel - 1) openProgram();
     }
 
@@ -60,6 +62,7 @@
       if (!drag || drag.id !== event.pointerId) return;
       drag = undefined;
       slide.removeAttribute('data-slide-held');
+      slide.removeAttribute('data-slide-full');
       slide.style.removeProperty('--slide-progress');
     }
 
@@ -107,6 +110,7 @@
       drag = undefined;
       slide.removeAttribute('data-slide-done');
       slide.removeAttribute('data-slide-held');
+      slide.removeAttribute('data-slide-full');
       slide.style.removeProperty('--slide-progress');
     });
     slide.setAttribute('aria-label', 'Двигай, чтобы открыть оглавление');
