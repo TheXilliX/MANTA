@@ -73,8 +73,9 @@
   const maxTrail = 16;
   const maxRipples = 4;
   const rippleSeconds = 1.6;
-  const introSeconds = 1.8;
-  const pixelSize = 2;
+  const introSeconds = 0.8;
+  const introStart = 0.44;
+  const pixelSize = 4;
   const minFrameInterval = 1000 / 35;
   const maxFieldCells = 600000;
   const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -203,7 +204,7 @@ void main() {
   }
 
   float reach = 0.5 * length(vec2(uAspect, 1.0)) + 0.45;
-  float reveal = smoothstep(0.0, 0.45, uIntro * reach - length(uv));
+  float reveal = mix(0.65, 1.0, smoothstep(0.0, 0.45, uIntro * reach - length(uv)));
   float field = clamp(pattern(uv + warp) - 0.5 * erase + ring * 0.55, 0.0, 1.0) * reveal;
 
   ivec2 tile = ivec2(mod(cell, 8.0));
@@ -269,7 +270,7 @@ void main() {
   let frameId = 0;
   let lastFrame = 0;
   let time = 0;
-  let intro = motion.matches ? 1 : 0;
+  let intro = motion.matches ? 1 : introStart;
 
   function draw() {
     if (!program || !viewportVisible || document.hidden) return;
@@ -329,7 +330,7 @@ void main() {
       const dt = Math.min(elapsed / 1000, 0.05);
       lastFrame = now;
       time += dt;
-      intro = Math.min(1, intro + dt / introSeconds);
+      intro = Math.min(1, intro + dt * (1 - introStart) / introSeconds);
       updateTrail(dt);
       ripples.forEach(ripple => { ripple.age += dt; });
       while (ripples.length && ripples[0].age > rippleSeconds) ripples.shift();

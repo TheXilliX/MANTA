@@ -23,8 +23,7 @@ function lessonMenu(base, current = '') {
     '</strong><small>' + escapeHtml(chapter.short) + '</small></span></a></li>').join('') + '</ol>';
 }
 
-function header(base, home, programPage) {
-  if (home) return '<header class="site-header frame"><span class="wordmark">' + brand + '</span></header>';
+function header(base, programPage) {
   return '<header class="site-header frame"><a class="wordmark" href="' + base + '" aria-label="MANTA. Главная">' + brand + '</a>' +
     (programPage ? '<a class="header-link" href="' + base + '">На главную</a>' : '<a class="header-link" href="' + courseLink(base) +
     '" data-program>' + menuIcon + 'Уроки</a>') + '</header>';
@@ -44,20 +43,20 @@ function page({base, title, description, content, classes, current='', programPa
     (home || programPage ? '<style>@view-transition{navigation:auto}@media(prefers-reduced-motion:reduce){@view-transition{navigation:none}}</style>' : '') +
     '<link rel="stylesheet" href="' + base + 'assets/site.css">' +
     (home || programPage ? '<link rel="stylesheet" href="' + base + 'assets/hero-motion.css">' : '') +
-    (home ? '<script src="' + base + 'assets/dither.js" defer></script>' : '') +
+    (home ? '<script src="' + base + 'assets/dither.js" defer fetchpriority="high"></script>' : '') +
     '<script src="' + base + 'assets/site.js" defer></script></head>' +
     '<body class="' + classes + '"><a class="skip-link" href="#main">К содержанию</a>' +
-    header(base, home, programPage) + content + (home || programPage ? '' : drawer(base, current)) + '</body></html>';
+    (home ? '' : header(base, programPage)) + content + (home || programPage ? '' : drawer(base, current)) + '</body></html>';
 }
 
 function home() {
   const main = '<main id="main" class="home-main">' +
     '<div class="dither-container" aria-hidden="true"><canvas class="dither-canvas"></canvas></div>' +
     '<section class="hero-copy frame">' +
-    '<h1><span>Безлимитный</span> <span>трафик <span class="hero-source">из <span lang="en">Threads</span></span></span></h1>' +
+    '<h1><span class="hero-lead">Лиды из</span> <span lang="en">Threads</span></h1>' +
     '<div class="hero-action"><a class="primary-button" href="' + courseLink('./') + '" draggable="false">Начать</a></div>' +
     '</section></main>';
-  return page({base:'./', title:'MANTA. — Безлимитный трафик из Threads', description:'Открытый мини-курс о трафике, постах и поиске клиентов в Threads.', content:main, classes:'home dark', home:true});
+  return page({base:'./', title:'Лиды из Threads — MANTA.', description:'Открытый мини-курс о трафике, постах и поиске клиентов в Threads.', content:main, classes:'home dark', home:true});
 }
 
 function program() {

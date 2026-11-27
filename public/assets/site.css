@@ -49,8 +49,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outlin
 .header-link svg { width: 1.12rem; color: var(--accent); }
 .home {
   --bg: #120f17;
-  --home-header: clamp(3.75rem, 8svh, 5.25rem);
-  --hero-type: clamp(2.25rem, min(8.7vw, 14svh), 9rem);
+  --hero-type: clamp(3.125rem, min(15vw, 22svh), 15rem);
   --poster-gutter: clamp(1.25rem, 5.25vw, 7rem);
   position: relative;
   isolation: isolate;
@@ -59,11 +58,8 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outlin
   user-select: none;
 }
 .home .frame { width: calc(100% - 2 * var(--poster-gutter)); }
-.home .site-header { min-height: var(--home-header); border-color: #f5f8fc26; }
-.home .wordmark { font-size: clamp(1.7rem, 2.45vw, 2.75rem); letter-spacing: -.062em; }
-.home .wordmark span { color: #c8c5cc; }
 .home-main {
-  min-height: calc(100svh - var(--home-header));
+  min-height: 100svh;
   display: grid;
   place-items: center;
 }
@@ -74,7 +70,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outlin
   overflow: hidden;
   pointer-events: none;
   background:
-    radial-gradient(circle, #bcbcbc34 .85px, transparent 1.05px) 0 0 / 4px 4px,
+    radial-gradient(circle, #bcbcbc34 1.7px, transparent 2.1px) 0 0 / 8px 8px,
     radial-gradient(ellipse at 0% 65%, #3d3a41, transparent 55%),
     radial-gradient(ellipse at 92% 87%, #625e67, transparent 59%),
     #120f17;
@@ -97,18 +93,19 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outlin
     linear-gradient(180deg, #120f17be, transparent 26%, transparent 87%, #120f1760);
 }
 .hero-copy {
-  padding-block: clamp(2rem, 6svh, 4rem) clamp(3.25rem, 13svh, 9rem);
+  padding-block: clamp(1.5rem, 6svh, 4rem);
   text-align: center;
 }
 .hero-copy h1 {
   display: grid;
-  gap: .03em;
+  gap: .09em;
   font-size: var(--hero-type);
-  line-height: .94;
+  line-height: .86;
   letter-spacing: -.043em;
   font-weight: 700;
+  text-transform: uppercase;
 }
-.hero-source { color: #d6d3da; white-space: nowrap; }
+.hero-lead { font-size: .56em; line-height: 1; letter-spacing: -.025em; }
 .hero-action { margin-top: clamp(2.15rem, 6svh, 4rem); }
 .hero-action .primary-button {
   min-height: 3.5rem;
@@ -219,16 +216,13 @@ blockquote { margin-block: 1.15rem .15rem; padding: .85rem 1rem .9rem; border-le
 @media (max-width: 700px) {
   .site-header { min-height: 4rem; }
   .home {
-    --home-header: 4rem;
-    --hero-type: clamp(2.15rem, 11.25vw, 4.75rem);
+    --hero-type: clamp(2.5rem, 17.5vw, 5.75rem);
   }
-  .hero-source { display: block; }
   .dither-container::after {
     background:
       radial-gradient(ellipse at 50% 45%, #120f17e0, #120f1799 44%, transparent 82%),
       linear-gradient(180deg, #120f17ad, transparent 26%, transparent 87%, #120f1750);
   }
-  .hero-copy h1 { line-height: 1; }
   .hero-action .primary-button { min-height: 3.25rem; min-width: 8.65rem; }
   .drawer { width: min(94vw, 32rem); }
   .chapter-hero { min-height: clamp(24rem, 96vw, 31rem); }
