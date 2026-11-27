@@ -28,13 +28,8 @@
       lightFrame = requestAnimationFrame(() => {
         lightFrame = 0;
         const { left, top, width, height } = slide.getBoundingClientRect();
-        const x = lightX - left;
-        const y = lightY - top;
-        const reach = 28;
-        if (x < -reach || x > width + reach || y < -reach || y > height + reach) {
-          if (slide.hasAttribute('data-slide-lit')) clearLight();
-          return;
-        }
+        const x = Math.max(0, Math.min(width, lightX - left));
+        const y = Math.max(0, Math.min(height, lightY - top));
 
         slide.style.setProperty('--slide-light-x', x + 'px');
         slide.style.setProperty('--slide-light-y', y + 'px');

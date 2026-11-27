@@ -73,7 +73,7 @@
   const maxTrail = 16;
   const maxRipples = 4;
   const rippleSeconds = 1.6;
-  const introSeconds = 0.68;
+  const introSeconds = 1.2;
   const introStart = 0.16;
   const pixelSize = 2;
   const minFrameInterval = 1000 / 35;
@@ -421,6 +421,7 @@ void main() {
     stop();
     program = null;
     delete canvas.dataset.ditherReady;
+    document.documentElement.dataset.heroReveal = '';
   });
   canvas.addEventListener('webglcontextrestored', () => {
     program = makeProgram();

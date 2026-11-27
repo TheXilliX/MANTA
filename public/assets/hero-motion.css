@@ -2,11 +2,11 @@
   [data-hero-intro]:not([data-hero-reveal]) .dither-container { background: var(--coal); }
   [data-hero-intro]:not([data-hero-reveal]) .hero-copy { visibility: hidden; }
   [data-hero-intro][data-hero-reveal] .hero-copy h1 > span {
-    animation: hero-blur-in .46s cubic-bezier(.2,.75,.25,1) both;
+    animation: hero-blur-in .68s cubic-bezier(.22,.62,.31,1) both;
   }
-  [data-hero-intro][data-hero-reveal] .hero-copy h1 > span + span { animation-delay: .12s; }
+  [data-hero-intro][data-hero-reveal] .hero-copy h1 > span + span { animation-delay: .61s; }
   [data-hero-intro][data-hero-reveal] .hero-action {
-    animation: hero-control-in .28s ease-out .59s both;
+    animation: hero-control-in .4s ease-out 1.29s both;
   }
   :root:has(body.program)::view-transition-group(root) {
     animation-duration: .46s;

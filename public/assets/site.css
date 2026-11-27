@@ -109,15 +109,11 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outlin
 .hero-action { margin-top: clamp(2.15rem, 6svh, 4rem); }
 .primary-button { display: inline-flex; min-height: 3.3rem; align-items: center; justify-content: center; padding: .76rem 1.25rem; background: var(--white); color: var(--coal); font-weight: 700; text-decoration: none; border: 1px solid var(--white); border-radius: .2rem; transition: background .18s, border-color .18s; }
 .primary-button:hover { background: var(--blue); border-color: var(--blue); }
-@property --slide-sweep {
-  syntax: "<angle>";
-  inherits: false;
-  initial-value: 0deg;
-}
 .slide-commit {
   --slide-pad: 4px;
   --slide-handle: 48px;
   --slide-progress: 0;
+  --slide-fill: calc(var(--slide-handle) + (100% - var(--slide-handle) - 2 * var(--slide-pad)) * var(--slide-progress));
   position: relative;
   width: min(100%, 280px);
   height: 56px;
@@ -158,12 +154,12 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outlin
   transition: opacity .14s ease;
 }
 .slide-commit[data-slide-ready]::after {
-  --slide-sweep: 0deg;
-  background: conic-gradient(from 270deg, var(--blue) var(--slide-sweep), transparent 0deg);
-  transition: --slide-sweep .24s ease-out, opacity .18s ease;
+  background: linear-gradient(90deg, var(--blue), var(--white));
+  clip-path: inset(0 max(0px, calc(100% - var(--slide-fill) - var(--slide-pad))) 0 0);
+  transition: opacity .15s ease;
 }
 .slide-commit[data-slide-lit]:not([data-slide-held])::before { opacity: 1; }
-.slide-commit[data-slide-held]::after { --slide-sweep: 360deg; opacity: 1; }
+.slide-commit[data-slide-held]::after { opacity: 1; }
 .slide-commit[data-slide-ready] .slide-commit__fallback { display: none; }
 .slide-commit[data-slide-ready] .slide-commit__label {
   display: grid;
@@ -181,7 +177,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outlin
   display: grid;
   align-items: center;
   justify-items: end;
-  width: calc(var(--slide-handle) + (100% - var(--slide-handle) - 2 * var(--slide-pad)) * var(--slide-progress));
+  width: var(--slide-fill);
   height: var(--slide-handle);
   padding-right: calc((var(--slide-handle) - 20px) / 2);
   border-radius: 24px;
@@ -192,7 +188,6 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outlin
   transition: width .2s cubic-bezier(.2,.8,.38,1), background-color .14s ease;
 }
 .slide-commit[data-slide-held] {
-  box-shadow: inset 0 0 0 1px #82c4ff52, inset 0 0 13px #82c4ff26, 0 0 20px #82c4ff36;
   cursor: grabbing;
 }
 .slide-commit[data-slide-held] .slide-commit__handle { transition: none; }
