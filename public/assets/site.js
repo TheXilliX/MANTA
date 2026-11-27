@@ -11,28 +11,6 @@
     });
   }
 
-  const grid = document.querySelector('.hero-grid');
-  if (grid) {
-    const motion = window.matchMedia('(hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)');
-    let frame;
-    const reset = () => {
-      cancelAnimationFrame(frame);
-      grid.style.removeProperty('--grid-x');
-      grid.style.removeProperty('--grid-y');
-    };
-
-    document.body.addEventListener('pointermove', (event) => {
-      if (!motion.matches || event.pointerType !== 'mouse') return;
-      cancelAnimationFrame(frame);
-      frame = requestAnimationFrame(() => {
-        grid.style.setProperty('--grid-x', ((event.clientX / window.innerWidth - .5) * 18).toFixed(1) + 'px');
-        grid.style.setProperty('--grid-y', ((event.clientY / window.innerHeight - .5) * 12).toFixed(1) + 'px');
-      });
-    }, { passive: true });
-    document.body.addEventListener('pointerleave', reset);
-    motion.addEventListener('change', reset);
-  }
-
   const drawer = document.querySelector('.drawer');
   let lastTrigger;
   if (drawer && typeof drawer.showModal === 'function') {

@@ -44,6 +44,7 @@ function page({base, title, description, content, classes, current='', programPa
     (home || programPage ? '<style>@view-transition{navigation:auto}@media(prefers-reduced-motion:reduce){@view-transition{navigation:none}}</style>' : '') +
     '<link rel="stylesheet" href="' + base + 'assets/site.css">' +
     (home || programPage ? '<link rel="stylesheet" href="' + base + 'assets/hero-motion.css">' : '') +
+    (home ? '<script src="' + base + 'assets/dither.js" defer></script>' : '') +
     '<script src="' + base + 'assets/site.js" defer></script></head>' +
     '<body class="' + classes + '"><a class="skip-link" href="#main">К содержанию</a>' +
     header(base, home, programPage) + content + (home || programPage ? '' : drawer(base, current)) + '</body></html>';
@@ -51,16 +52,12 @@ function page({base, title, description, content, classes, current='', programPa
 
 function home() {
   const main = '<main id="main" class="home-main">' +
-    '<div class="hero-scene" aria-hidden="true">' +
-    '<div class="hero-moon"><img src="./assets/art/hero-moon.jpg" alt="" fetchpriority="high"></div>' +
-    '<div class="hero-grid"></div>' +
-    '<div class="hero-ray"><img src="./assets/art/hero-ray.png" alt="" width="1280" height="853" fetchpriority="high" draggable="false"></div></div>' +
+    '<div class="dither-container" aria-hidden="true"><canvas class="dither-canvas"></canvas></div>' +
     '<section class="hero-copy frame">' +
-    '<h1><span>Безлимитный</span> <span>трафик</span></h1>' +
-    '<p class="hero-topic">' + lessons.length + ' уроков по продвижению в <span lang="en">Threads</span></p>' +
-    '<div class="hero-action"><a class="primary-button" href="./program/" draggable="false">Открыть уроки</a></div>' +
+    '<h1><span>Безлимитный</span> <span>трафик <span class="hero-source">из <span lang="en">Threads</span></span></span></h1>' +
+    '<div class="hero-action"><a class="primary-button" href="' + courseLink('./') + '" draggable="false">Начать</a></div>' +
     '</section></main>';
-  return page({base:'./', title:'MANTA. — Безлимитный трафик из тредс', description:'Открытый мини-курс о трафике, постах и поиске клиентов в Threads.', content:main, classes:'home dark', home:true});
+  return page({base:'./', title:'MANTA. — Безлимитный трафик из Threads', description:'Открытый мини-курс о трафике, постах и поиске клиентов в Threads.', content:main, classes:'home dark', home:true});
 }
 
 function program() {
@@ -108,8 +105,11 @@ function lessonPage(chapter, index) {
     classes:'lesson ' + chapter.theme + ' look-' + chapter.look, current:chapter.id});
 }
 
-const expectedScenes = ['hero-moon.jpg', 'hero-ray.png', ...lessons.map(({scene}) => scene + '.jpg')];
-await Promise.all(expectedScenes.map((name) => access(new URL('art/' + name, assets))));
+const expectedScenes = lessons.map(({scene}) => scene + '.jpg');
+await Promise.all([
+  access(new URL('dither.js', assets)),
+  ...expectedScenes.map((name) => access(new URL('art/' + name, assets))),
+]);
 await rm(destination, { force: true, recursive: true });
 await mkdir(destination, { recursive: true });
 const dist = (file) => new URL(file, destination);
