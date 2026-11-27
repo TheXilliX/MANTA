@@ -43,6 +43,7 @@ function page({base, title, description, content, classes, current='', programPa
     '<meta name="description" content="' + escapeHtml(description) + '"><title>' + escapeHtml(title) + '</title>' +
     '<link rel="icon" href="' + base + 'assets/manta-icon.png" type="image/png">' +
     (home || programPage ? '<style>@view-transition{navigation:auto}@media(prefers-reduced-motion:reduce){@view-transition{navigation:none}}</style>' : '') +
+    (home ? '<script>if(matchMedia("(prefers-reduced-motion: no-preference)").matches&&performance.getEntriesByType("navigation")[0]?.type!=="back_forward"){document.documentElement.dataset.heroIntro="";setTimeout(()=>{document.documentElement.dataset.heroReveal=""},1600)}</script>' : '') +
     '<link rel="stylesheet" href="' + base + 'assets/site.css">' +
     (home || programPage ? '<link rel="stylesheet" href="' + base + 'assets/hero-motion.css">' : '') +
     (home ? '<script src="' + base + 'assets/dither.js" defer fetchpriority="high"></script>' : '') +

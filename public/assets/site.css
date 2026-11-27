@@ -49,7 +49,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outlin
 .header-link:hover { text-decoration: underline; }
 .header-link svg { width: 1.12rem; color: var(--accent); }
 .home {
-  --hero-type: clamp(3.125rem, min(15vw, 22svh), 15rem);
+  --hero-type: clamp(3.125rem, min(14vw, 20svh), 13.25rem);
   --poster-gutter: clamp(1.25rem, 5.25vw, 7rem);
   position: relative;
   isolation: isolate;
@@ -70,7 +70,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outlin
   overflow: hidden;
   pointer-events: none;
   background:
-    radial-gradient(circle, #e6ecf139 1.7px, transparent 2.1px) 0 0 / 8px 8px,
+    radial-gradient(circle, #e6ecf139 .85px, transparent 1.05px) 0 0 / 4px 4px,
     radial-gradient(ellipse at 0% 65%, var(--graphite), transparent 55%),
     radial-gradient(ellipse at 92% 87%, #e6ecf148, transparent 59%),
     var(--coal);
@@ -98,14 +98,14 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outlin
 }
 .hero-copy h1 {
   display: grid;
-  gap: .09em;
+  gap: .13em;
   font-size: var(--hero-type);
   line-height: .86;
-  letter-spacing: -.043em;
+  letter-spacing: -.056em;
   font-weight: 700;
   text-transform: uppercase;
 }
-.hero-lead { font-size: .56em; line-height: 1; letter-spacing: -.025em; }
+.hero-lead { font-size: .46em; line-height: 1; letter-spacing: -.018em; }
 .hero-action { margin-top: clamp(2.15rem, 6svh, 4rem); }
 .primary-button { display: inline-flex; min-height: 3.3rem; align-items: center; justify-content: center; padding: .76rem 1.25rem; background: var(--white); color: var(--coal); font-weight: 700; text-decoration: none; border: 1px solid var(--white); border-radius: .2rem; transition: background .18s, border-color .18s; }
 .primary-button:hover { background: var(--blue); border-color: var(--blue); }

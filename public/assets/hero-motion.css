@@ -1,4 +1,13 @@
 @media (prefers-reduced-motion: no-preference) {
+  [data-hero-intro]:not([data-hero-reveal]) .dither-container { background: var(--coal); }
+  [data-hero-intro]:not([data-hero-reveal]) .hero-copy { visibility: hidden; }
+  [data-hero-intro][data-hero-reveal] .hero-copy h1 > span {
+    animation: hero-blur-in .46s cubic-bezier(.2,.75,.25,1) both;
+  }
+  [data-hero-intro][data-hero-reveal] .hero-copy h1 > span + span { animation-delay: .12s; }
+  [data-hero-intro][data-hero-reveal] .hero-action {
+    animation: hero-control-in .28s ease-out .59s both;
+  }
   :root:has(body.program)::view-transition-group(root) {
     animation-duration: .46s;
   }
@@ -15,6 +24,16 @@
   :root:has(body.program)::view-transition-new(root) {
     animation: program-reveal .46s cubic-bezier(.28, .64, .36, 1) both;
   }
+}
+
+@keyframes hero-blur-in {
+  from { opacity: 0; filter: blur(13px); transform: translateY(-.11em); }
+  to { opacity: 1; filter: blur(0); transform: translateY(0); }
+}
+
+@keyframes hero-control-in {
+  from { visibility: hidden; opacity: 0; transform: translateY(.5rem); }
+  to { visibility: visible; opacity: 1; transform: translateY(0); }
 }
 
 @keyframes home-recede {
