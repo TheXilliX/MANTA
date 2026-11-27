@@ -374,6 +374,10 @@ void main() {
 
   function locatePointer(event) {
     if (motion.matches || !program || !viewportVisible) return false;
+    if (event.target.closest?.('.slide-commit[data-slide-held]')) {
+      pointer.active = false;
+      return false;
+    }
     const rect = canvas.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;

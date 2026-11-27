@@ -20,7 +20,7 @@
     }
 
     function trackLight(event) {
-      if (event.pointerType !== 'mouse' || motion.matches || !hover.matches || slide.hasAttribute('data-slide-done')) return;
+      if (drag || event.pointerType !== 'mouse' || motion.matches || !hover.matches || slide.hasAttribute('data-slide-done')) return;
       lightX = event.clientX;
       lightY = event.clientY;
       if (lightFrame) return;
@@ -42,7 +42,6 @@
       drag = undefined;
       clearLight();
       slide.removeAttribute('data-slide-held');
-      slide.removeAttribute('data-slide-full');
       slide.style.setProperty('--slide-progress', '1');
       slide.setAttribute('data-slide-done', '');
       // Leave the confirmation on screen briefly before the native page transition.
@@ -54,27 +53,25 @@
       const distance = event.clientX - drag.x;
       const progress = Math.max(0, Math.min(1, distance / drag.travel));
       slide.style.setProperty('--slide-progress', String(progress));
-      slide.toggleAttribute('data-slide-full', progress === 1);
-      if (event.type === 'pointerup' && distance >= drag.travel - 1) openProgram();
+      if (event.type === 'pointerup' && progress === 1) openProgram();
     }
 
     function releaseDrag(event) {
       if (!drag || drag.id !== event.pointerId) return;
       drag = undefined;
       slide.removeAttribute('data-slide-held');
-      slide.removeAttribute('data-slide-full');
       slide.style.removeProperty('--slide-progress');
     }
 
     slide.addEventListener('pointerdown', (event) => {
       if (!event.isPrimary || event.button !== 0 || hasModifier(event) || drag || slide.hasAttribute('data-slide-done')) return;
+      if (!handle.contains(event.target)) return;
       const style = getComputedStyle(slide);
       const inset = Number.parseFloat(style.paddingInlineStart) || 0;
       const handleWidth = Number.parseFloat(style.getPropertyValue('--slide-handle'));
-      const maxTravel = slide.clientWidth - handleWidth - 2 * inset;
-      if (maxTravel <= 0) return;
-      const endCenter = slide.getBoundingClientRect().right - inset - handleWidth / 2;
-      const travel = Math.min(maxTravel, Math.max(maxTravel / 4, endCenter - event.clientX));
+      const travel = slide.getBoundingClientRect().width - handleWidth - 2 * inset;
+      if (travel <= 0) return;
+      clearLight();
       drag = { id: event.pointerId, x: event.clientX, travel };
       slide.setAttribute('data-slide-held', '');
       slide.setPointerCapture(event.pointerId);
@@ -110,7 +107,6 @@
       drag = undefined;
       slide.removeAttribute('data-slide-done');
       slide.removeAttribute('data-slide-held');
-      slide.removeAttribute('data-slide-full');
       slide.style.removeProperty('--slide-progress');
     });
     slide.setAttribute('aria-label', 'Двигай, чтобы открыть оглавление');
