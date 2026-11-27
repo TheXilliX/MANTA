@@ -138,19 +138,6 @@
 
   const index = document.querySelector('.program-index');
   if (index) {
-    window.addEventListener('pagereveal', ({ viewTransition }) => {
-      try {
-        const key = 'manta-program-entry';
-        const bounds = JSON.parse(sessionStorage.getItem(key));
-        sessionStorage.removeItem(key);
-        if (!viewTransition || !bounds) return;
-        for (const edge of ['top', 'right', 'bottom', 'left']) {
-          if (Number.isFinite(bounds[edge])) {
-            document.documentElement.style.setProperty('--portal-' + edge, Math.max(0, Math.min(1, bounds[edge])) * 100 + '%');
-          }
-        }
-      } catch { /* Geometry is optional for navigation. */ }
-    }, { once: true });
     const finePointer = matchMedia('(any-hover: hover) and (any-pointer: fine) and (prefers-reduced-motion: no-preference)');
     const reset = () => index.removeAttribute('data-crosshair');
     index.addEventListener('pointermove', event => {

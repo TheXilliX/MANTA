@@ -43,6 +43,7 @@ function page({base, title, description, content, classes, current='', programPa
     '<link rel="icon" href="' + base + 'assets/manta-icon.png" type="image/png">' +
     (home || programPage ? '<style>@view-transition{navigation:auto}@media(prefers-reduced-motion:reduce){@view-transition{navigation:none}}</style>' : '') +
     (home ? '<script>if(matchMedia("(prefers-reduced-motion: no-preference)").matches&&performance.getEntriesByType("navigation")[0]?.type!=="back_forward"){document.documentElement.dataset.heroIntro="";setTimeout(()=>{if(!document.querySelector("[data-dither-ready]"))document.documentElement.dataset.heroReveal=""},1600)}</script>' : '') +
+    (programPage ? '<script>try{const key="manta-program-entry",bounds=JSON.parse(sessionStorage.getItem(key));sessionStorage.removeItem(key);if(bounds){for(const edge of ["top","right","bottom","left"]){if(Number.isFinite(bounds[edge]))document.documentElement.style.setProperty("--portal-"+edge,Math.max(0,Math.min(1,bounds[edge]))*100+"%")}}}catch{}</script>' : '') +
     '<link rel="stylesheet" href="' + base + 'assets/site.css">' +
     (programPage ? '<link rel="stylesheet" href="' + base + 'assets/program.css">' : '') +
     (home || programPage ? '<link rel="stylesheet" href="' + base + 'assets/hero-motion.css">' : '') +
