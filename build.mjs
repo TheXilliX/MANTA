@@ -13,6 +13,8 @@ const svg = (path) => '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidd
 const menuIcon = svg('<path d="M4 7h16M4 12h16M4 17h10"/>');
 const closeIcon = svg('<path d="m6 6 12 12M18 6 6 18"/>');
 const copyIcon = svg('<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/>');
+const slideArrow = svg('<path d="M5 12h13m-5-5 5 5-5 5"/>');
+const slideCheck = svg('<path d="m5 12 4 4L19 6"/>');
 
 const lessonLink = (base, id) => base + 'lessons/' + id + '/';
 const courseLink = (base) => base + 'program/';
@@ -54,7 +56,12 @@ function home() {
     '<div class="dither-container" aria-hidden="true"><canvas class="dither-canvas"></canvas></div>' +
     '<section class="hero-copy frame">' +
     '<h1><span class="hero-lead">Лиды из</span> <span lang="en">Threads</span></h1>' +
-    '<div class="hero-action"><a class="primary-button" href="' + courseLink('./') + '" draggable="false">Начать</a></div>' +
+    '<div class="hero-action"><a class="primary-button slide-commit" href="' + courseLink('./') + '" draggable="false">' +
+    '<span class="slide-commit__fallback">Начать</span>' +
+    '<span class="slide-commit__label" aria-hidden="true">Двигай</span>' +
+    '<span class="slide-commit__handle" aria-hidden="true">' + slideArrow + '</span>' +
+    '<span class="slide-commit__done" aria-hidden="true">' + slideCheck + 'Открываем</span>' +
+    '</a></div>' +
     '</section></main>';
   return page({base:'./', title:'Лиды из Threads — MANTA.', description:'Открытый мини-курс о трафике, постах и поиске клиентов в Threads.', content:main, classes:'home dark', home:true});
 }

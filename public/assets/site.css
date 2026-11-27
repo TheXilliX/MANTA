@@ -107,18 +107,71 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outlin
 }
 .hero-lead { font-size: .56em; line-height: 1; letter-spacing: -.025em; }
 .hero-action { margin-top: clamp(2.15rem, 6svh, 4rem); }
-.hero-action .primary-button {
-  min-height: 3.5rem;
-  min-width: 9.2rem;
-  border-radius: 3rem;
-  padding-inline: 1.5rem;
-  font-size: 1.05rem;
-  color: #120f17;
-}
-.home .primary-button:hover { background: #ddd9e1; border-color: #ddd9e1; }
-.home .primary-button:focus-visible { outline-color: var(--white); }
 .primary-button { display: inline-flex; min-height: 3.3rem; align-items: center; justify-content: center; padding: .76rem 1.25rem; background: var(--white); color: var(--coal); font-weight: 700; text-decoration: none; border: 1px solid var(--white); border-radius: .2rem; transition: background .18s, border-color .18s; }
 .primary-button:hover { background: var(--blue); border-color: var(--blue); }
+.slide-commit {
+  --slide-pad: 4px;
+  --slide-handle: 48px;
+  --slide-progress: 0;
+  position: relative;
+  width: min(100%, 280px);
+  height: 56px;
+  padding: var(--slide-pad);
+  border: 0;
+  border-radius: 28px;
+  font-size: .94rem;
+  isolation: isolate;
+  -webkit-tap-highlight-color: transparent;
+}
+.slide-commit:focus-visible { outline-color: var(--white); }
+.slide-commit__handle, .slide-commit__label, .slide-commit__done { display: none; }
+.slide-commit[data-slide-ready] {
+  background: #262626;
+  color: var(--white);
+  box-shadow: inset 0 0 0 1px #f5f8fc28;
+  cursor: grab;
+  touch-action: pan-y;
+  -webkit-touch-callout: none;
+}
+.slide-commit[data-slide-ready]:hover { box-shadow: inset 0 0 0 1px #f5f8fc65; }
+.slide-commit[data-slide-ready] .slide-commit__fallback { display: none; }
+.slide-commit[data-slide-ready] .slide-commit__label {
+  display: grid;
+  opacity: calc(1 - var(--slide-progress) * .84);
+}
+.slide-commit__label, .slide-commit__done {
+  position: absolute;
+  inset: 0;
+  place-content: center;
+  pointer-events: none;
+}
+.slide-commit[data-slide-ready] .slide-commit__handle {
+  position: absolute;
+  top: var(--slide-pad);
+  left: calc(var(--slide-pad) + (100% - var(--slide-handle) - 2 * var(--slide-pad)) * var(--slide-progress));
+  display: grid;
+  place-items: center;
+  width: var(--slide-handle);
+  height: var(--slide-handle);
+  border-radius: 50%;
+  color: #120f17;
+  background: #f5f5f5;
+  box-shadow: 0 2px 8px #0005;
+  pointer-events: none;
+  transition: left .2s cubic-bezier(.2,.8,.38,1);
+}
+.slide-commit[data-slide-held] { cursor: grabbing; }
+.slide-commit[data-slide-held] .slide-commit__handle { transition: none; }
+.slide-commit[data-slide-done] {
+  background: #22c55e;
+  color: #101912;
+  box-shadow: none;
+  cursor: default;
+  transition: none;
+}
+.slide-commit[data-slide-done] .slide-commit__handle,
+.slide-commit[data-slide-done] .slide-commit__label { display: none; }
+.slide-commit[data-slide-done] .slide-commit__done { display: flex; align-items: center; justify-content: center; gap: .5rem; }
 .drawer { position: fixed; inset: 0 auto 0 0; margin: 0; width: min(100%, 36rem); max-width: 100%; height: 100dvh; max-height: 100%; padding: 1.65rem clamp(1.25rem, 5vw, 2.8rem) 2rem; overscroll-behavior: contain; border: 0; border-right: 1px solid #f5f8fc35; background: radial-gradient(ellipse at 12% 0%, #203146, #111216 53%); color: #f5f8fc; color-scheme: dark; --accent: #82c4ff; --muted: #bac4cf; --rule: #f5f8fc32; }
 .drawer[open] { animation: drawer-in .24s cubic-bezier(.2,.65,.25,1) both; }
 .drawer::backdrop { background: #090c12bc; }
@@ -223,7 +276,6 @@ blockquote { margin-block: 1.15rem .15rem; padding: .85rem 1rem .9rem; border-le
       radial-gradient(ellipse at 50% 45%, #120f17e0, #120f1799 44%, transparent 82%),
       linear-gradient(180deg, #120f17ad, transparent 26%, transparent 87%, #120f1750);
   }
-  .hero-action .primary-button { min-height: 3.25rem; min-width: 8.65rem; }
   .drawer { width: min(94vw, 32rem); }
   .chapter-hero { min-height: clamp(24rem, 96vw, 31rem); }
   .chapter-heading { padding-block: 3.35rem 1.65rem; }
@@ -240,5 +292,5 @@ blockquote { margin-block: 1.15rem .15rem; padding: .85rem 1rem .9rem; border-le
 @media (prefers-reduced-motion: reduce) {
   :root { scroll-behavior: auto; }
   .drawer[open] { animation: none; }
-  .primary-button, .course-row { transition: none; }
+  .primary-button, .course-row, .slide-commit[data-slide-ready] .slide-commit__handle { transition: none; }
 }
