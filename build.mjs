@@ -25,10 +25,9 @@ function lessonMenu(base, current = '') {
     '</strong><small>' + escapeHtml(chapter.short) + '</small></span></a></li>').join('') + '</ol>';
 }
 
-function header(base, programPage) {
+function header(base) {
   return '<header class="site-header frame"><a class="wordmark" href="' + base + '" aria-label="MANTA. Главная">' + brand + '</a>' +
-    (programPage ? '<a class="header-link" href="' + base + '">На главную</a>' : '<a class="header-link" href="' + courseLink(base) +
-    '" data-program>' + menuIcon + 'Уроки</a>') + '</header>';
+    '<a class="header-link" href="' + courseLink(base) + '" data-program>' + menuIcon + 'Уроки</a></header>';
 }
 
 function drawer(base, current) {
@@ -45,11 +44,13 @@ function page({base, title, description, content, classes, current='', programPa
     (home || programPage ? '<style>@view-transition{navigation:auto}@media(prefers-reduced-motion:reduce){@view-transition{navigation:none}}</style>' : '') +
     (home ? '<script>if(matchMedia("(prefers-reduced-motion: no-preference)").matches&&performance.getEntriesByType("navigation")[0]?.type!=="back_forward"){document.documentElement.dataset.heroIntro="";setTimeout(()=>{document.documentElement.dataset.heroReveal=""},1600)}</script>' : '') +
     '<link rel="stylesheet" href="' + base + 'assets/site.css">' +
+    (programPage ? '<link rel="stylesheet" href="' + base + 'assets/program.css">' : '') +
     (home || programPage ? '<link rel="stylesheet" href="' + base + 'assets/hero-motion.css">' : '') +
     (home ? '<script src="' + base + 'assets/dither.js" defer fetchpriority="high"></script>' : '') +
     '<script src="' + base + 'assets/site.js" defer></script></head>' +
     '<body class="' + classes + '"><a class="skip-link" href="#main">К содержанию</a>' +
-    (home ? '' : header(base, programPage)) + content + (home || programPage ? '' : drawer(base, current)) + '</body></html>';
+    (home || programPage ? '' : header(base)) + content +
+    (home || programPage ? '' : drawer(base, current)) + '</body></html>';
 }
 
 function home() {
@@ -68,9 +69,11 @@ function home() {
 }
 
 function program() {
-  const main = '<main id="main" class="program-page frame"><div class="program-intro"><h1>Программа курса</h1>' +
-    '<p>От оформления профиля и первых строк до поиска запросов и разбора результатов.</p></div>' +
-    '<nav aria-label="Список уроков">' + lessonMenu('../') + '</nav></main>';
+  const main = '<main id="main" class="program-page frame">' +
+    '<div class="program-scene" aria-hidden="true"><div class="program-horizon"></div><div class="program-rays"></div></div>' +
+    '<div class="program-intro"><p>Лиды из <span lang="en">Threads</span></p><h1>Программа <br>курса</h1></div>' +
+    '<nav class="program-index" aria-label="Список уроков">' + lessonMenu('../') +
+    '<div class="program-crosshair" aria-hidden="true"></div></nav></main>';
   return page({base:'../', title:'Программа курса — MANTA.', description:'Восемь уроков по трафику из Threads.', content:main, classes:'program dark', programPage:true});
 }
 

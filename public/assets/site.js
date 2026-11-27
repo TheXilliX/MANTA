@@ -118,16 +118,32 @@
     slide.setAttribute('data-slide-ready', '');
   }
 
-  const transitionLink = document.querySelector('.home .hero-action .primary-button, .program .site-header .wordmark');
-  if (transitionLink) {
-    const target = new URL(transitionLink.href);
+  const transitionLink = document.querySelector('.home .hero-action .primary-button');
+  if (transitionLink || document.body.classList.contains('program')) {
+    const target = transitionLink ? new URL(transitionLink.href) : null;
     window.addEventListener('pageswap', ({ activation, viewTransition }) => {
       if (!viewTransition) return;
       // The departing transition's ready promise rejects when skipped or hidden.
       viewTransition.ready.catch(() => {});
       const url = activation?.entry?.url;
-      if (!url || new URL(url).pathname !== target.pathname) viewTransition.skipTransition();
+      if (!url || new URL(url).pathname !== target?.pathname) viewTransition.skipTransition();
     });
+  }
+
+  const index = document.querySelector('.program-index');
+  if (index) {
+    const finePointer = matchMedia('(any-hover: hover) and (any-pointer: fine) and (prefers-reduced-motion: no-preference)');
+    const reset = () => index.removeAttribute('data-crosshair');
+    index.addEventListener('pointermove', event => {
+      if (event.pointerType !== 'mouse' || !finePointer.matches) return;
+      const bounds = index.getBoundingClientRect();
+      index.style.setProperty('--cross-x', (event.clientX - bounds.left) + 'px');
+      index.style.setProperty('--cross-y', (event.clientY - bounds.top) + 'px');
+      index.setAttribute('data-crosshair', '');
+    }, { passive: true });
+    index.addEventListener('pointerleave', reset);
+    index.addEventListener('pointercancel', reset);
+    finePointer.addEventListener('change', reset);
   }
 
   const drawer = document.querySelector('.drawer');
