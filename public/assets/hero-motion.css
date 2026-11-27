@@ -9,7 +9,7 @@
     animation: hero-control-in .44s ease-out .78s both;
   }
   :root:has(body.program)::view-transition-group(root) {
-    animation-duration: .74s;
+    animation-duration: .72s;
   }
 
   :root:has(body.program)::view-transition-old(root),
@@ -18,11 +18,12 @@
   }
 
   :root:has(body.program)::view-transition-old(root) {
-    animation: home-recede .74s ease-out both;
+    animation: home-recede .72s cubic-bezier(.3,.65,.3,1) both;
   }
 
   :root:has(body.program)::view-transition-new(root) {
-    animation: program-reveal .74s cubic-bezier(.23, .82, .32, 1) both;
+    animation: program-page-turn .72s cubic-bezier(.25,.65,.2,1) both;
+    transform-origin: right center;
   }
 }
 
@@ -37,14 +38,13 @@
 }
 
 @keyframes home-recede {
-  to { opacity: .28; transform: scale(.985); }
+  to { opacity: .32; transform: translateX(-8%) scale(.98); }
 }
 
-@keyframes program-reveal {
+@keyframes program-page-turn {
   from {
-    clip-path: inset(var(--portal-top, 64%) var(--portal-right, 40%) var(--portal-bottom, 30%) var(--portal-left, 40%) round 28px);
-    opacity: .35;
+    clip-path: inset(0 0 0 100%);
+    transform: perspective(1400px) rotateY(-13deg);
   }
-  35% { opacity: 1; }
-  to { clip-path: inset(0 round 0); opacity: 1; }
+  to { clip-path: inset(0); transform: perspective(1400px) rotateY(0); }
 }

@@ -45,18 +45,7 @@
       slide.style.setProperty('--slide-progress', '1');
       slide.setAttribute('data-slide-done', '');
       // Leave the confirmation on screen briefly before the native page transition.
-      navigationTimer = window.setTimeout(() => {
-        if (!motion.matches) {
-          const { top, right, bottom, left } = slide.getBoundingClientRect();
-          try {
-            sessionStorage.setItem('manta-program-entry', JSON.stringify({
-              top: top / innerHeight, right: 1 - right / innerWidth,
-              bottom: 1 - bottom / innerHeight, left: left / innerWidth,
-            }));
-          } catch { /* The transition has a centered fallback. */ }
-        }
-        location.assign(slide.href);
-      }, 700);
+      navigationTimer = window.setTimeout(() => location.assign(slide.href), 700);
     }
 
     function trackDrag(event) {
@@ -120,7 +109,7 @@
       slide.removeAttribute('data-slide-held');
       slide.style.removeProperty('--slide-progress');
     });
-    slide.setAttribute('aria-label', 'Двигай, чтобы открыть программу курса');
+    slide.setAttribute('aria-label', 'Двигай, чтобы открыть оглавление');
     slide.setAttribute('data-slide-ready', '');
   }
 
@@ -136,67 +125,4 @@
     });
   }
 
-  const index = document.querySelector('.program-index');
-  if (index) {
-    const finePointer = matchMedia('(any-hover: hover) and (any-pointer: fine) and (prefers-reduced-motion: no-preference)');
-    const reset = () => index.removeAttribute('data-crosshair');
-    index.addEventListener('pointermove', event => {
-      if (event.pointerType !== 'mouse' || !finePointer.matches) return;
-      const bounds = index.getBoundingClientRect();
-      index.style.setProperty('--cross-x', (event.clientX - bounds.left) + 'px');
-      index.style.setProperty('--cross-y', (event.clientY - bounds.top) + 'px');
-      index.setAttribute('data-crosshair', '');
-    }, { passive: true });
-    index.addEventListener('pointerleave', reset);
-    index.addEventListener('pointercancel', reset);
-    finePointer.addEventListener('change', reset);
-  }
-
-  const drawer = document.querySelector('.drawer');
-  let lastTrigger;
-  if (drawer && typeof drawer.showModal === 'function') {
-    document.querySelectorAll('[data-program]').forEach((link) => {
-      link.setAttribute('aria-haspopup', 'dialog');
-      link.addEventListener('click', (event) => {
-        if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-        event.preventDefault();
-        lastTrigger = link;
-        drawer.showModal();
-      });
-    });
-    drawer.addEventListener('click', (event) => {
-      if (event.target !== drawer) return;
-      const {left, right, top, bottom} = drawer.getBoundingClientRect();
-      if (event.clientX < left || event.clientX > right || event.clientY < top || event.clientY > bottom) drawer.close();
-    });
-    drawer.addEventListener('close', () => lastTrigger?.focus({ preventScroll: true }));
-  }
-
-  for (const button of document.querySelectorAll('[data-copy]')) {
-    if (!navigator.clipboard?.writeText) continue;
-    button.hidden = false;
-    const template = button.closest('.template');
-    const source = template.querySelector('[data-template]');
-    const message = template.querySelector('.copy-status');
-    const label = button.querySelector('span');
-    let reset;
-    button.addEventListener('click', async () => {
-      clearTimeout(reset);
-      try {
-        await navigator.clipboard.writeText(source.textContent);
-        message.textContent = 'Шаблон скопирован';
-        label.textContent = 'Скопировано';
-        reset = setTimeout(() => { label.textContent = 'Скопировать'; message.textContent = ''; }, 2500);
-      } catch {
-        label.textContent = 'Скопировать';
-        const selection = window.getSelection();
-        const range = document.createRange();
-        range.selectNodeContents(source);
-        selection?.removeAllRanges();
-        selection?.addRange(range);
-        message.textContent = 'Текст выделен. Скопируй его обычным способом.';
-      }
-    });
-  }
 })();
-

@@ -1,97 +1,73 @@
-.program-page {
-  --index-rule: #e6ecf12c;
-  display: grid;
+.contents-page,
+.lesson-placeholder {
+  width: min(100% - 2 * var(--gutter), 76rem);
   min-height: 100svh;
-  grid-template-columns: minmax(0, .82fr) minmax(0, 1.18fr);
-  align-items: start;
-  gap: clamp(2rem, 6vw, 6.75rem);
-  padding-block: clamp(2.75rem, 7vh, 6.5rem);
-  isolation: isolate;
+  padding-block: clamp(3rem, 9vh, 7rem);
 }
-.program-scene {
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  overflow: hidden;
-  pointer-events: none;
+.program,
+body.light:has(.lesson-placeholder) {
+  background: #e6ecf1;
+  color: #111216;
 }
-.program-horizon {
-  position: absolute;
-  inset: 29% 35% -15% -8%;
-  background: url('art/hero-moon.jpg') center / cover no-repeat;
-  transform: scaleX(-1);
-  opacity: .69;
-  mask-image: linear-gradient(to right, transparent, black 52%), linear-gradient(to bottom, transparent 4%, black 56%);
-  mask-composite: intersect;
+.contents-heading p {
+  color: #425364;
+  font-size: clamp(.9rem, 1.3vw, 1.12rem);
+  letter-spacing: .015em;
+  margin-bottom: 1.35rem;
 }
-.program-rays {
-  position: absolute;
-  inset: -14% -13% -12% -7%;
-  transform-origin: 90% 8%;
-  background:
-    conic-gradient(from 181deg at 90% 8%, transparent 0deg, #82c4ff1b 16deg, transparent 23deg, #e6ecf11b 32deg, transparent 46deg, #82c4ff19 56deg, transparent 78deg),
-    radial-gradient(ellipse at 90% 8%, #82c4ff22, transparent 51%);
-  mask-image: radial-gradient(ellipse at 93% 5%, black, transparent 72%);
-  animation: program-rays-drift 4.8s ease-out both;
+.contents-heading h1 {
+  font: 400 clamp(3.5rem, 9.8vw, 10rem)/.92 Georgia, 'Times New Roman', serif;
+  letter-spacing: -.072em;
 }
-@keyframes program-rays-drift {
-  from { opacity: .32; transform: rotate(-8deg); }
-  to { opacity: .85; transform: rotate(0); }
+.contents-list {
+  display: grid;
+  grid-auto-flow: column;
+  grid-template-rows: repeat(4, auto);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: clamp(2rem, 8vw, 9rem);
+  row-gap: clamp(.5rem, 1.1vh, 1rem);
+  padding: 0;
+  margin: clamp(2.75rem, 7vh, 6rem) 0 0;
+  list-style: none;
 }
-.program-intro { position: sticky; top: clamp(2.75rem, 7vh, 6.5rem); }
-.program-intro p { color: var(--muted); font-size: clamp(.95rem, 1.35vw, 1.3rem); margin-bottom: 1.1rem; }
-.program-intro h1 { font-size: clamp(3.2rem, 6.05vw, 7.25rem); line-height: .92; font-weight: 700; letter-spacing: -.062em; }
-.program-index { min-width: 0; position: relative; }
-.program-index .course-list,
-.program-index .course-list li { border-color: var(--index-rule); }
-.program-index .course-row {
-  min-height: clamp(5.15rem, 9.8vh, 7.25rem);
-  grid-template-columns: clamp(2.6rem, 5vw, 5.5rem) minmax(0, 1fr);
-  padding: .95rem .6rem .95rem 0;
-  transition: color .18s ease, background .18s ease;
+.contents-list .course-row {
+  display: flex;
+  align-items: center;
+  min-height: 3.4rem;
+  width: fit-content;
+  max-width: 100%;
+  font-size: clamp(1.16rem, 2.35vw, 2.45rem);
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -.04em;
+  padding: .5rem 0;
+  text-decoration: none;
 }
-.program-index .course-row:hover,
-.program-index .course-row:focus-visible {
-  background: linear-gradient(90deg, #82c4ff10, transparent);
+.contents-list .course-row:is(:hover, :focus-visible),
+.lesson-placeholder a:is(:hover, :focus-visible) {
+  color: #245a92;
+  text-decoration: underline;
+  text-decoration-thickness: .045em;
 }
-.program-index .course-row strong {
-  font-size: clamp(1.25rem, 2.25vw, 2.5rem);
-  line-height: 1.1;
-  letter-spacing: -.039em;
+.lesson-placeholder {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
 }
-.program-index .course-row small {
-  font-size: clamp(.88rem, 1.07vw, 1.13rem);
-  margin-top: .45rem;
+.lesson-placeholder h1 {
+  max-width: 17ch;
+  font: 400 clamp(2.8rem, 7vw, 7rem)/1 Georgia, 'Times New Roman', serif;
+  letter-spacing: -.055em;
+  overflow-wrap: anywhere;
 }
-.program-index .course-number {
-  color: var(--muted);
-  font-size: clamp(.85rem, 1.23vw, 1.35rem);
-  transition: color .18s ease;
-}
-.program-index .course-row:is(:hover, :focus-visible) .course-number { color: var(--blue); }
-.program-crosshair {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  opacity: 0;
-  background:
-    linear-gradient(#82c4ff68, #82c4ff68) var(--cross-x, 0px) 0 / 1px 100% no-repeat,
-    linear-gradient(90deg, #82c4ffa8, #82c4ff45) 0 var(--cross-y, 0px) / 100% 1px no-repeat;
-  mask-image: radial-gradient(ellipse 9rem 5rem at var(--cross-x, 0px) var(--cross-y, 0px), black, transparent);
-  transition: opacity .16s ease;
-}
-.program-index[data-crosshair] .program-crosshair { opacity: 1; }
-
-@media (max-width: 880px) {
-  .program-page { grid-template-columns: minmax(0, 1fr); gap: 2rem; padding-top: 2.75rem; }
-  .program-intro { position: static; }
-  .program-intro h1 { font-size: clamp(2.8rem, 9vw, 5.25rem); }
-  .program-intro h1 br { display: none; }
-  .program-intro p { margin-bottom: .7rem; }
-  .program-horizon { inset: 3% -8% auto -18%; height: 19.5rem; opacity: .29; }
-  .program-index .course-row { min-height: 4.8rem; }
-  .program-rays { inset: -7% -20% -12% -20%; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .program-rays { animation: none; opacity: .85; }
+.lesson-placeholder p { margin-top: 1.4rem; color: #425364; }
+.lesson-placeholder a { display: inline-flex; align-items: center; min-height: 2.75rem; margin-top: 1.2rem; }
+@media (max-width: 640px) {
+  .contents-list {
+    grid-auto-flow: row;
+    grid-template: none;
+    row-gap: .1rem;
+  }
+  .contents-heading h1 { font-size: clamp(2.8rem, 11vw, 4.5rem); }
 }
