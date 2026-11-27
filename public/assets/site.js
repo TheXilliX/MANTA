@@ -3,14 +3,50 @@
   const handle = slide?.querySelector('.slide-commit__handle');
   if (handle && typeof slide.setPointerCapture === 'function') {
     const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const hover = window.matchMedia('(any-hover: hover) and (any-pointer: fine)');
     const hasModifier = (event) => event.metaKey || event.ctrlKey || event.shiftKey || event.altKey;
     let drag;
     let suppressPointerClick = false;
     let navigationTimer;
+    let lightFrame = 0;
+    let lightX;
+    let lightY;
+
+    function clearLight() {
+      cancelAnimationFrame(lightFrame);
+      lightFrame = 0;
+      slide.removeAttribute('data-slide-lit');
+      slide.style.removeProperty('--slide-light-x');
+      slide.style.removeProperty('--slide-light-y');
+    }
+
+    function trackLight(event) {
+      if (event.pointerType !== 'mouse' || motion.matches || !hover.matches || slide.hasAttribute('data-slide-done')) return;
+      lightX = event.clientX;
+      lightY = event.clientY;
+      if (lightFrame) return;
+
+      lightFrame = requestAnimationFrame(() => {
+        lightFrame = 0;
+        const { left, top, width, height } = slide.getBoundingClientRect();
+        const x = lightX - left;
+        const y = lightY - top;
+        const reach = 28;
+        if (x < -reach || x > width + reach || y < -reach || y > height + reach) {
+          if (slide.hasAttribute('data-slide-lit')) clearLight();
+          return;
+        }
+
+        slide.style.setProperty('--slide-light-x', x + 'px');
+        slide.style.setProperty('--slide-light-y', y + 'px');
+        slide.setAttribute('data-slide-lit', '');
+      });
+    }
 
     function openProgram() {
       if (slide.hasAttribute('data-slide-done')) return;
       drag = undefined;
+      clearLight();
       slide.removeAttribute('data-slide-held');
       slide.style.setProperty('--slide-progress', '1');
       slide.setAttribute('data-slide-done', '');
@@ -64,7 +100,15 @@
       event.preventDefault();
       openProgram();
     });
-    window.addEventListener('pagehide', () => clearTimeout(navigationTimer));
+    document.addEventListener('pointermove', trackLight, { passive: true });
+    document.documentElement.addEventListener('pointerleave', clearLight);
+    window.addEventListener('blur', clearLight);
+    hover.addEventListener('change', clearLight);
+    motion.addEventListener('change', clearLight);
+    window.addEventListener('pagehide', () => {
+      clearTimeout(navigationTimer);
+      clearLight();
+    });
     window.addEventListener('pageshow', (event) => {
       if (!event.persisted) return;
       drag = undefined;

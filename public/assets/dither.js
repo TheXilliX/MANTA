@@ -211,10 +211,12 @@ void main() {
   float threshold = (bayer8[tile.y * 8 + tile.x] - 0.25) / levels;
   vec3 luma = vec3(0.2126, 0.7152, 0.0722);
   float base = dot(uBackground, luma);
-  vec3 offset = (uWave - vec3(base)) * field + threshold;
-  offset -= mix(0.2, 0.0, smoothstep(0.45, 0.8, dot(uBackground + offset, luma)));
-  offset = floor(clamp(offset, 0.0, 1.0 - min(uBackground.r, min(uBackground.g, uBackground.b))) * levels + 0.5) / levels;
-  outColor = vec4(toSrgb(uBackground + offset), 1.0);
+  float range = dot(uWave, luma) - base;
+  float offset = range * field + threshold;
+  offset -= mix(0.2, 0.0, smoothstep(0.45, 0.8, base + offset));
+  // Quantize luminance once, so each Bayer step follows the same palette.
+  float level = floor(clamp(offset, 0.0, 1.0 - base) * levels + 0.5) / levels;
+  outColor = vec4(toSrgb(mix(uBackground, uWave, clamp(level / max(range, 0.0001), 0.0, 1.0))), 1.0);
 }`;
 
   const compileShader = (type, source) => {
@@ -252,8 +254,8 @@ void main() {
     const names = ['uGrid', 'uAspect', 'uTime', 'uIntro', 'uWave', 'uBackground', 'uTrail[0]', 'uRipples[0]', 'uTrailCount', 'uRippleCount'];
     uniforms = Object.fromEntries(names.map(name => [name.replace('[0]', ''), gl.getUniformLocation(program, name)]));
     gl.useProgram(program);
-    gl.uniform3fv(uniforms.uWave, linearColor(188, 188, 188));
-    gl.uniform3fv(uniforms.uBackground, linearColor(18, 15, 23));
+    gl.uniform3fv(uniforms.uWave, linearColor(230, 236, 241));
+    gl.uniform3fv(uniforms.uBackground, linearColor(17, 18, 22));
   };
   initializeUniforms();
 
