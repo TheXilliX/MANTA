@@ -1,4 +1,26 @@
 (() => {
+  const scene = document.querySelector('.hero-scene');
+  if (scene) {
+    const motion = window.matchMedia('(hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)');
+    let frame;
+    const reset = () => {
+      cancelAnimationFrame(frame);
+      scene.style.removeProperty('--hero-x');
+      scene.style.removeProperty('--hero-y');
+    };
+
+    document.body.addEventListener('pointermove', (event) => {
+      if (!motion.matches || event.pointerType !== 'mouse') return;
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        scene.style.setProperty('--hero-x', ((event.clientX / window.innerWidth - .5) * 24).toFixed(1) + 'px');
+        scene.style.setProperty('--hero-y', ((event.clientY / window.innerHeight - .5) * 16).toFixed(1) + 'px');
+      });
+    }, { passive: true });
+    document.body.addEventListener('pointerleave', reset);
+    motion.addEventListener('change', reset);
+  }
+
   const drawer = document.querySelector('.drawer');
   let lastTrigger;
   if (drawer && typeof drawer.showModal === 'function') {

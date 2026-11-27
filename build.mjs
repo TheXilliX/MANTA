@@ -26,7 +26,7 @@ function lessonMenu(base, current = '') {
 function header(base, home, programPage) {
   return '<header class="site-header frame"><a class="wordmark" href="' + base + '" aria-label="MANTA. Главная">' + brand + '</a>' +
     (programPage ? '<a class="header-link" href="' + base + '">На главную</a>' : '<a class="header-link" href="' + courseLink(base) +
-    '" data-program>' + menuIcon + (home ? 'Программа' : 'Уроки') + '</a>') + '</header>';
+    (home ? '">Программа' : '" data-program>' + menuIcon + 'Уроки') + '</a>') + '</header>';
 }
 
 function drawer(base, current) {
@@ -42,17 +42,19 @@ function page({base, title, description, content, classes, current='', programPa
     '<link rel="icon" href="' + base + 'assets/manta-icon.png" type="image/png">' +
     '<link rel="stylesheet" href="' + base + 'assets/site.css"><script src="' + base + 'assets/site.js" defer></script></head>' +
     '<body class="' + classes + '"><a class="skip-link" href="#main">К содержанию</a>' +
-    header(base, home, programPage) + content + (programPage ? '' : drawer(base, current)) + '</body></html>';
+    header(base, home, programPage) + content + (home || programPage ? '' : drawer(base, current)) + '</body></html>';
 }
 
 function home() {
   const main = '<main id="main" class="home-main">' +
-    '<picture class="home-art"><source media="(max-width: 700px)" srcset="./assets/art/manta-mobile.jpg"><img src="./assets/art/manta.jpg" alt="" fetchpriority="high"></picture>' +
-    '<div class="hero-shade"></div><section class="hero-copy frame">' +
-    '<h1><span>Безлимитный</span><span>трафик</span><span>из тредс</span></h1>' +
-    '<p>От оформления профиля и первых постов до переходов и диалогов.</p>' +
-    '<div class="hero-action"><a class="primary-button" href="./program/" data-program>Открыть программу</a><span>' + lessons.length +
-    ' уроков</span></div></section></main>';
+    '<div class="hero-scene" aria-hidden="true">' +
+    '<div class="hero-moon"><img src="./assets/art/hero-moon.jpg" alt="" fetchpriority="high"></div>' +
+    '<div class="hero-grid"></div>' +
+    '<div class="hero-ray"><img src="./assets/art/hero-ray.png" alt="" fetchpriority="high"></div></div>' +
+    '<section class="hero-copy frame">' +
+    '<h1><span>Безлимитный</span> <span>трафик</span> <span>из тредс</span></h1>' +
+    '<div class="hero-action"><a class="primary-button" href="./program/">Открыть программу</a></div>' +
+    '</section></main>';
   return page({base:'./', title:'MANTA. — Безлимитный трафик из тредс', description:'Открытый мини-курс о трафике, постах и поиске клиентов в Threads.', content:main, classes:'home dark', home:true});
 }
 
@@ -101,8 +103,8 @@ function lessonPage(chapter, index) {
     classes:'lesson ' + chapter.theme + ' look-' + chapter.look, current:chapter.id});
 }
 
-const expectedScenes = ['manta', 'manta-mobile', ...lessons.map(({scene}) => scene)];
-await Promise.all(expectedScenes.map((name) => access(new URL('art/' + name + '.jpg', assets))));
+const expectedScenes = ['hero-moon.jpg', 'hero-ray.png', ...lessons.map(({scene}) => scene + '.jpg')];
+await Promise.all(expectedScenes.map((name) => access(new URL('art/' + name, assets))));
 await rm(destination, { force: true, recursive: true });
 await mkdir(destination, { recursive: true });
 const dist = (file) => new URL(file, destination);
