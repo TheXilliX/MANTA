@@ -167,7 +167,6 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outlin
 .slide-commit[data-slide-ready] .slide-commit__fallback { display: none; }
 .slide-commit[data-slide-ready] .slide-commit__label {
   display: grid;
-  opacity: max(0, calc(1 - var(--slide-progress) * 3));
 }
 .slide-commit__label, .slide-commit__done {
   position: absolute;
@@ -178,17 +177,19 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outlin
 .slide-commit[data-slide-ready] .slide-commit__handle {
   position: absolute;
   top: var(--slide-pad);
-  left: calc(var(--slide-pad) + (100% - var(--slide-handle) - 2 * var(--slide-pad)) * var(--slide-progress));
+  left: var(--slide-pad);
   display: grid;
-  place-items: center;
-  width: var(--slide-handle);
+  align-items: center;
+  justify-items: end;
+  width: calc(var(--slide-handle) + (100% - var(--slide-handle) - 2 * var(--slide-pad)) * var(--slide-progress));
   height: var(--slide-handle);
-  border-radius: 50%;
+  padding-right: calc((var(--slide-handle) - 20px) / 2);
+  border-radius: 24px;
   color: var(--coal);
   background: var(--white);
   box-shadow: 0 2px 8px #0005;
   pointer-events: none;
-  transition: left .2s cubic-bezier(.2,.8,.38,1);
+  transition: width .2s cubic-bezier(.2,.8,.38,1), background-color .14s ease;
 }
 .slide-commit[data-slide-held] {
   box-shadow: inset 0 0 0 1px #82c4ff52, inset 0 0 13px #82c4ff26, 0 0 20px #82c4ff36;
@@ -196,7 +197,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outlin
 }
 .slide-commit[data-slide-held] .slide-commit__handle { transition: none; }
 .slide-commit[data-slide-done] {
-  background: #22c55e;
+  background: var(--graphite);
   color: #101912;
   box-shadow: none;
   cursor: default;
@@ -204,9 +205,20 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outlin
 }
 .slide-commit[data-slide-done]::before,
 .slide-commit[data-slide-done]::after { content: none; }
-.slide-commit[data-slide-done] .slide-commit__handle,
+.slide-commit[data-slide-done] .slide-commit__handle { background: #22c55e; }
+.slide-commit[data-slide-done] .slide-commit__handle svg,
 .slide-commit[data-slide-done] .slide-commit__label { display: none; }
-.slide-commit[data-slide-done] .slide-commit__done { display: flex; align-items: center; justify-content: center; gap: .5rem; }
+.slide-commit[data-slide-done] .slide-commit__done {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  animation: slide-confirm .24s ease-out both;
+}
+@keyframes slide-confirm {
+  from { opacity: 0; transform: translateX(1rem); }
+  to { opacity: 1; transform: translateX(0); }
+}
 .drawer { position: fixed; inset: 0 auto 0 0; margin: 0; width: min(100%, 36rem); max-width: 100%; height: 100dvh; max-height: 100%; padding: 1.65rem clamp(1.25rem, 5vw, 2.8rem) 2rem; overscroll-behavior: contain; border: 0; border-right: 1px solid #f5f8fc35; background: radial-gradient(ellipse at 12% 0%, #203146, #111216 53%); color: #f5f8fc; color-scheme: dark; --accent: #82c4ff; --muted: #bac4cf; --rule: #f5f8fc32; }
 .drawer[open] { animation: drawer-in .24s cubic-bezier(.2,.65,.25,1) both; }
 .drawer::backdrop { background: #090c12bc; }
@@ -329,4 +341,5 @@ blockquote { margin-block: 1.15rem .15rem; padding: .85rem 1rem .9rem; border-le
   .drawer[open] { animation: none; }
   .primary-button, .course-row, .slide-commit[data-slide-ready] .slide-commit__handle { transition: none; }
   .slide-commit[data-slide-ready]::before, .slide-commit[data-slide-ready]::after { transition: none; }
+  .slide-commit[data-slide-done] .slide-commit__done { animation: none; }
 }
