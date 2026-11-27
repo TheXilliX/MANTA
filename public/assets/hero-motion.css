@@ -2,14 +2,14 @@
   [data-hero-intro]:not([data-hero-reveal]) .dither-container { background: var(--coal); }
   [data-hero-intro]:not([data-hero-reveal]) .hero-copy { visibility: hidden; }
   [data-hero-intro][data-hero-reveal] .hero-copy h1 > span {
-    animation: hero-blur-in .68s cubic-bezier(.22,.62,.31,1) both;
+    animation: hero-curtain-in .64s cubic-bezier(.22,.64,.32,1) both;
   }
-  [data-hero-intro][data-hero-reveal] .hero-copy h1 > span + span { animation-delay: .61s; }
+  [data-hero-intro][data-hero-reveal] .hero-copy h1 > span + span { animation-delay: .35s; }
   [data-hero-intro][data-hero-reveal] .hero-action {
-    animation: hero-control-in .4s ease-out 1.29s both;
+    animation: hero-control-in .44s ease-out .78s both;
   }
   :root:has(body.program)::view-transition-group(root) {
-    animation-duration: .46s;
+    animation-duration: .74s;
   }
 
   :root:has(body.program)::view-transition-old(root),
@@ -18,17 +18,17 @@
   }
 
   :root:has(body.program)::view-transition-old(root) {
-    animation: home-recede .46s ease-out both;
+    animation: home-recede .74s ease-out both;
   }
 
   :root:has(body.program)::view-transition-new(root) {
-    animation: program-reveal .46s cubic-bezier(.28, .64, .36, 1) both;
+    animation: program-reveal .74s cubic-bezier(.23, .82, .32, 1) both;
   }
 }
 
-@keyframes hero-blur-in {
-  from { opacity: 0; filter: blur(13px); transform: translateY(-.11em); }
-  to { opacity: 1; filter: blur(0); transform: translateY(0); }
+@keyframes hero-curtain-in {
+  from { clip-path: inset(0 -.12em 100%); filter: blur(4px); transform: translateY(-.13em); }
+  to { clip-path: inset(-.15em); filter: blur(0); transform: translateY(0); }
 }
 
 @keyframes hero-control-in {
@@ -37,10 +37,14 @@
 }
 
 @keyframes home-recede {
-  to { opacity: .55; }
+  to { opacity: .28; transform: scale(.985); }
 }
 
 @keyframes program-reveal {
-  from { clip-path: circle(0 at 50% 64%); }
-  to { clip-path: circle(110% at 50% 64%); }
+  from {
+    clip-path: inset(var(--portal-top, 64%) var(--portal-right, 40%) var(--portal-bottom, 30%) var(--portal-left, 40%) round 28px);
+    opacity: .35;
+  }
+  35% { opacity: 1; }
+  to { clip-path: inset(0 round 0); opacity: 1; }
 }

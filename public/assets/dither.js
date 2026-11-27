@@ -298,7 +298,9 @@ void main() {
     }
     gl.drawArrays(gl.TRIANGLES, 0, 3);
     if (!canvas.dataset.ditherReady) canvas.dataset.ditherReady = 'true';
-    if (intro >= 1) document.documentElement.dataset.heroReveal = '';
+    if (intro >= 0.9 && !document.documentElement.hasAttribute('data-hero-reveal')) {
+      document.documentElement.dataset.heroReveal = '';
+    }
   }
 
   function updateTrail(dt) {
