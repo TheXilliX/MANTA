@@ -1,0 +1,42 @@
+@media (prefers-reduced-motion: no-preference) {
+  .hero-ray img {
+    animation: manta-drift 8.5s ease-in-out infinite;
+  }
+
+  .hero-grid {
+    translate: var(--grid-x, 0px) var(--grid-y, 0px);
+    transition: translate .48s cubic-bezier(.22, .7, .2, 1);
+  }
+
+  :root:has(body.program)::view-transition-group(root) {
+    animation-duration: .46s;
+  }
+
+  :root:has(body.program)::view-transition-old(root),
+  :root:has(body.program)::view-transition-new(root) {
+    mix-blend-mode: normal;
+  }
+
+  :root:has(body.program)::view-transition-old(root) {
+    animation: home-recede .46s ease-out both;
+  }
+
+  :root:has(body.program)::view-transition-new(root) {
+    animation: program-reveal .46s cubic-bezier(.28, .64, .36, 1) both;
+  }
+}
+
+@keyframes manta-drift {
+  0%, 100% { transform: translate(0, 0); }
+  46% { transform: translate(-.55rem, -.8rem); }
+  73% { transform: translate(.15rem, -.2rem); }
+}
+
+@keyframes home-recede {
+  to { opacity: .55; }
+}
+
+@keyframes program-reveal {
+  from { clip-path: circle(0 at 78% 96%); }
+  to { clip-path: circle(150% at 78% 96%); }
+}

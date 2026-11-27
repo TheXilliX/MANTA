@@ -24,9 +24,10 @@ function lessonMenu(base, current = '') {
 }
 
 function header(base, home, programPage) {
+  if (home) return '<header class="site-header frame"><span class="wordmark">' + brand + '</span></header>';
   return '<header class="site-header frame"><a class="wordmark" href="' + base + '" aria-label="MANTA. Главная">' + brand + '</a>' +
     (programPage ? '<a class="header-link" href="' + base + '">На главную</a>' : '<a class="header-link" href="' + courseLink(base) +
-    (home ? '">Программа' : '" data-program>' + menuIcon + 'Уроки') + '</a>') + '</header>';
+    '" data-program>' + menuIcon + 'Уроки</a>') + '</header>';
 }
 
 function drawer(base, current) {
@@ -40,7 +41,10 @@ function page({base, title, description, content, classes, current='', programPa
   return '<!doctype html>\n<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">' +
     '<meta name="description" content="' + escapeHtml(description) + '"><title>' + escapeHtml(title) + '</title>' +
     '<link rel="icon" href="' + base + 'assets/manta-icon.png" type="image/png">' +
-    '<link rel="stylesheet" href="' + base + 'assets/site.css"><script src="' + base + 'assets/site.js" defer></script></head>' +
+    (home || programPage ? '<style>@view-transition{navigation:auto}@media(prefers-reduced-motion:reduce){@view-transition{navigation:none}}</style>' : '') +
+    '<link rel="stylesheet" href="' + base + 'assets/site.css">' +
+    (home || programPage ? '<link rel="stylesheet" href="' + base + 'assets/hero-motion.css">' : '') +
+    '<script src="' + base + 'assets/site.js" defer></script></head>' +
     '<body class="' + classes + '"><a class="skip-link" href="#main">К содержанию</a>' +
     header(base, home, programPage) + content + (home || programPage ? '' : drawer(base, current)) + '</body></html>';
 }
@@ -50,10 +54,11 @@ function home() {
     '<div class="hero-scene" aria-hidden="true">' +
     '<div class="hero-moon"><img src="./assets/art/hero-moon.jpg" alt="" fetchpriority="high"></div>' +
     '<div class="hero-grid"></div>' +
-    '<div class="hero-ray"><img src="./assets/art/hero-ray.png" alt="" fetchpriority="high"></div></div>' +
+    '<div class="hero-ray"><img src="./assets/art/hero-ray.png" alt="" width="1280" height="853" fetchpriority="high" draggable="false"></div></div>' +
     '<section class="hero-copy frame">' +
-    '<h1><span>Безлимитный</span> <span>трафик</span> <span>из тредс</span></h1>' +
-    '<div class="hero-action"><a class="primary-button" href="./program/">Открыть программу</a></div>' +
+    '<h1><span>Безлимитный</span> <span>трафик</span></h1>' +
+    '<p class="hero-topic">' + lessons.length + ' уроков по продвижению в <span lang="en">Threads</span></p>' +
+    '<div class="hero-action"><a class="primary-button" href="./program/" draggable="false">Открыть уроки</a></div>' +
     '</section></main>';
   return page({base:'./', title:'MANTA. — Безлимитный трафик из тредс', description:'Открытый мини-курс о трафике, постах и поиске клиентов в Threads.', content:main, classes:'home dark', home:true});
 }

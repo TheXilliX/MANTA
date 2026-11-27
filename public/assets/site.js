@@ -1,20 +1,32 @@
 (() => {
-  const scene = document.querySelector('.hero-scene');
-  if (scene) {
+  const transitionLink = document.querySelector('.home .hero-action .primary-button, .program .site-header .wordmark');
+  if (transitionLink) {
+    const target = new URL(transitionLink.href);
+    window.addEventListener('pageswap', ({ activation, viewTransition }) => {
+      if (!viewTransition) return;
+      // The departing transition's ready promise rejects when skipped or hidden.
+      viewTransition.ready.catch(() => {});
+      const url = activation?.entry?.url;
+      if (!url || new URL(url).pathname !== target.pathname) viewTransition.skipTransition();
+    });
+  }
+
+  const grid = document.querySelector('.hero-grid');
+  if (grid) {
     const motion = window.matchMedia('(hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)');
     let frame;
     const reset = () => {
       cancelAnimationFrame(frame);
-      scene.style.removeProperty('--hero-x');
-      scene.style.removeProperty('--hero-y');
+      grid.style.removeProperty('--grid-x');
+      grid.style.removeProperty('--grid-y');
     };
 
     document.body.addEventListener('pointermove', (event) => {
       if (!motion.matches || event.pointerType !== 'mouse') return;
       cancelAnimationFrame(frame);
       frame = requestAnimationFrame(() => {
-        scene.style.setProperty('--hero-x', ((event.clientX / window.innerWidth - .5) * 24).toFixed(1) + 'px');
-        scene.style.setProperty('--hero-y', ((event.clientY / window.innerHeight - .5) * 16).toFixed(1) + 'px');
+        grid.style.setProperty('--grid-x', ((event.clientX / window.innerWidth - .5) * 18).toFixed(1) + 'px');
+        grid.style.setProperty('--grid-y', ((event.clientY / window.innerHeight - .5) * 12).toFixed(1) + 'px');
       });
     }, { passive: true });
     document.body.addEventListener('pointerleave', reset);
