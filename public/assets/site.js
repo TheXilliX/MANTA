@@ -135,15 +135,6 @@
   }
 
   let openingLesson;
-  let pressTimer;
-  function finishPress(event) {
-    if (event && event.animationName !== 'lesson-button-fill') return;
-    clearTimeout(pressTimer);
-    openingLesson.removeEventListener('animationend', finishPress);
-    openingLesson.setAttribute('data-edge-filled', '');
-    window.openCoursePage(openingLesson, { delay: touchScreen.matches ? 0 : 45 });
-  }
-
   document.addEventListener('click', event => {
     if (event.defaultPrevented || event.button !== 0 || event.metaKey ||
         event.ctrlKey || event.shiftKey || event.altKey) return;
@@ -156,25 +147,12 @@
     }
     if (openingLesson) return;
     openingLesson = link;
-    if (event.detail > 0) {
-      const box = link.getBoundingClientRect();
-      link.style.setProperty('--edge-press-x', Math.max(0, Math.min(box.width, event.clientX - box.left)) + 'px');
-      link.style.setProperty('--edge-press-y', Math.max(0, Math.min(box.height, event.clientY - box.top)) + 'px');
-    }
-    link.addEventListener('animationend', finishPress);
     link.setAttribute('data-edge-commit', '');
-    pressTimer = setTimeout(finishPress, touchScreen.matches ? 245 : 800);
-  });
-  window.addEventListener('pagehide', () => {
-    clearTimeout(pressTimer);
-    openingLesson?.removeEventListener('animationend', finishPress);
+    window.openCoursePage(link);
   });
   window.addEventListener('pageshow', event => {
     if (!event.persisted || !openingLesson) return;
     openingLesson.removeAttribute('data-edge-commit');
-    openingLesson.removeAttribute('data-edge-filled');
-    openingLesson.style.removeProperty('--edge-press-x');
-    openingLesson.style.removeProperty('--edge-press-y');
     openingLesson = undefined;
   });
 })();
