@@ -460,7 +460,7 @@ void main() {
   }).observe(canvas);
   window.addEventListener('pointermove', locatePointer, { passive: true });
   window.addEventListener('pointerdown', event => {
-    if (!locatePointer(event)) return;
+    if (event.target.closest?.('.slide-commit') || !locatePointer(event)) return;
     ripples.push({ x: pointer.x, y: pointer.y, age: 0 });
     if (ripples.length > maxRipples) ripples.shift();
   }, { passive: true });

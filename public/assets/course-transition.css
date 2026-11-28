@@ -11,7 +11,7 @@
     --course-wave-ease: cubic-bezier(.3, .55, .22, 1);
   }
 
-  :root:is([data-wave-mode='outgoing'], [data-wave-mode='fallback'])::after,
+  :root[data-wave-mode='fallback']::after,
   :root[data-wave-mode='fallback'] main,
   :root[data-wave-mode='native']::view-transition-new(root),
   :root[data-wave-mode='native']::view-transition-new(course-glow) {
@@ -30,17 +30,12 @@
     );
   }
 
-  :root:is([data-wave-mode='outgoing'], [data-wave-mode='fallback'], [data-wave-mode='native'])::after {
+  :root:is([data-wave-mode='fallback'], [data-wave-mode='native'])::after {
     content: '';
     position: fixed;
     inset: 0;
     z-index: 20;
     pointer-events: none;
-  }
-
-  :root[data-wave-mode='outgoing']::after {
-    background: var(--course-wave-light);
-    animation: course-pulse .33s ease-out both;
   }
 
   :root[data-wave-mode='fallback'] main {
@@ -72,13 +67,6 @@
     mix-blend-mode: normal;
     animation: course-open var(--course-wave-duration) var(--course-wave-ease) both;
   }
-}
-
-@keyframes course-pulse {
-  0% { --course-wave-radius: 16px; opacity: 0; }
-  27% { opacity: .75; }
-  75% { opacity: .7; }
-  100% { --course-wave-radius: var(--course-wave-start); opacity: 0; }
 }
 
 @keyframes course-open {

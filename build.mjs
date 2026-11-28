@@ -66,7 +66,7 @@ function program() {
     escapeHtml(section.title) + '</h2>' + actionLink(section) + '</section>').join('');
   const main = '<main id="main" class="contents-page">' +
     '<div class="contents-scene" aria-hidden="true"><canvas class="contents-waves"></canvas>' +
-    '<img class="contents-art" draggable="false" src="../assets/art/hero-ray.png" width="1280" height="853" alt="" fetchpriority="high"></div>' +
+    '<img class="contents-art" draggable="false" src="../assets/art/hero-ray.webp" width="1536" height="1024" alt="" fetchpriority="high"></div>' +
     '<div class="contents-layout frame"><div class="contents-lessons"><section class="contents-feature">' +
     '<h1 lang="en">' + escapeHtml(mainLesson.title) + '</h1>' +
     actionLink(mainLesson, 'edge-button--primary') +

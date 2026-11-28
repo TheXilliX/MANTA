@@ -70,6 +70,15 @@ float perlin(vec2 p) {
   return mix(mix(n00, n10, u.x), mix(n01, n11, u.x), u.y);
 }`;
 
+const FIELD_NODES = `
+uniform sampler2D uField;
+uniform ivec2 uFieldSize;
+uniform float uCell;
+
+vec2 node(ivec2 cell) {
+  return texelFetch(uField, clamp(cell, ivec2(0), uFieldSize - 1), 0).xy;
+}`;
+
 const VERTEX = `#version 300 es
 precision highp float;
 precision highp int;
@@ -84,9 +93,6 @@ uniform vec2 uFrequency;
 uniform vec2 uDrift;
 uniform float uTwist;
 uniform uint uSeed;
-uniform sampler2D uField;
-uniform ivec2 uFieldSize;
-uniform float uCell;
 uniform float uLimit;
 uniform float uReach;
 uniform float uReveal;
@@ -98,10 +104,7 @@ out float vShow;
 out float vPhase;
 
 ${FLOW_NOISE}
-
-vec2 node(ivec2 cell) {
-  return texelFetch(uField, clamp(cell, ivec2(0), uFieldSize - 1), 0).xy;
-}
+${FIELD_NODES}
 
 void weights(float f, out vec4 w, out vec4 d) {
   float g = 1.0 - f;
@@ -218,26 +221,37 @@ void main() {
 }`;
 
 
-const RAY_COLUMNS = 24;
-const RAY_ROWS = 16;
+const RAY_COLUMNS = 32;
+const RAY_ROWS = 24;
 const RAY_VERTEX = `#version 300 es
 precision highp float;
 precision highp int;
 uniform vec2 uView;
 uniform vec4 uRayRect;
 uniform vec2 uAxis;
-uniform vec2 uAmplitude;
+uniform float uAmplitude;
 uniform vec2 uFrequency;
 uniform vec2 uDrift;
 uniform float uTwist;
 uniform uint uSeed;
 out vec2 vTexCoord;
+out float vFinLight;
 
 ${FLOW_NOISE}
+${FIELD_NODES}
 
 const vec2 CORNERS[6] = vec2[6](
   vec2(0, 0), vec2(1, 0), vec2(0, 1), vec2(1, 0), vec2(1, 1), vec2(0, 1)
 );
+
+vec2 current(vec2 point) {
+  vec2 p = point / uCell;
+  ivec2 base = ivec2(floor(p));
+  vec2 fraction = smoothstep(0.0, 1.0, fract(p));
+  vec2 top = mix(node(base), node(base + ivec2(1, 0)), fraction.x);
+  vec2 bottom = mix(node(base + ivec2(0, 1)), node(base + ivec2(1, 1)), fraction.x);
+  return mix(top, bottom, fraction.y);
+}
 
 void main() {
   int quad = gl_VertexID / 6;
@@ -247,9 +261,18 @@ void main() {
   vec2 center = pixel - uView * 0.5;
   vec2 rest = vec2(dot(center, uAxis), dot(center, vec2(-uAxis.y, uAxis.x)));
   float turn = perlin(rest * uFrequency + uDrift) * 12.0 * uTwist;
-  float flex = mix(0.3, 1.0, smoothstep(0.12, 0.5, abs(vTexCoord.x - 0.44)));
-  vec2 bend = vec2(cos(turn) * 0.25, sin(turn) * 0.22) * uAmplitude * flex;
+  // The diagonal spine steadies the head and the bases of both wings.
+  vec2 body = vTexCoord - vec2(0.29, 0.73);
+  float span = dot(body, vec2(0.67, 0.74));
+  float fin = smoothstep(0.06, 0.34, abs(span));
+  float tail = smoothstep(0.39, 0.84, dot(body, vec2(0.74, -0.67))) * (1.0 - fin);
+  float flex = 0.12 + 0.75 * fin + 0.38 * tail;
+  float scale = min(1.0, uRayRect.z / 670.0);
+  vec2 bend = vec2(cos(turn) * 0.21, sin(turn) * 0.34) * uAmplitude * flex * scale;
   pixel += vec2(bend.x * uAxis.x - bend.y * uAxis.y, bend.x * uAxis.y + bend.y * uAxis.x);
+  vec2 push = current(pixel) * (0.2 + 0.85 * fin + 0.34 * tail) * scale;
+  pixel += 30.0 * scale * tanh(push / 30.0);
+  vFinLight = 0.067 * fin * sin(turn) * (uAmplitude / 32.0) - 0.09 * fin * tanh(push.y / 18.0);
   vec2 clip = pixel / uView * 2.0 - 1.0;
   gl_Position = vec4(clip.x, -clip.y, 0.0, 1.0);
 }`;
@@ -258,13 +281,14 @@ const RAY_FRAGMENT = `#version 300 es
 precision highp float;
 uniform sampler2D uRayImage;
 in vec2 vTexCoord;
+in float vFinLight;
 out vec4 outColor;
 
 void main() {
   vec4 ink = texture(uRayImage, vTexCoord);
   float gray = dot(ink.rgb, vec3(0.2126, 0.7152, 0.0722));
   vec3 tone = mix(vec3(gray), ink.rgb, 0.64);
-  outColor = vec4(tone * ink.a, ink.a);
+  outColor = vec4(tone * (1.0 + vFinLight) * ink.a, ink.a);
 }`;
 
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
@@ -581,12 +605,14 @@ const link = (gl, vertexSource, fragmentSource) => {
       gl.uniform2f(r.uView, view.width, view.height);
       gl.uniform4fv(r.uRayRect, rayRect);
       gl.uniform2f(r.uAxis, cos, sin);
-      const amplitude = reduce ? 0 : settings.amplitude;
-      gl.uniform2f(r.uAmplitude, amplitude, amplitude);
+      gl.uniform1f(r.uAmplitude, reduce ? 0 : settings.amplitude);
       gl.uniform2f(r.uFrequency, 0.002 / settings.scale, 0.0015 / settings.scale);
       gl.uniform2f(r.uDrift, flowTime * 0.025, flowTime * 0.0075);
       gl.uniform1f(r.uTwist, settings.twist);
       gl.uniform1ui(r.uSeed, settings.variation);
+      gl.uniform1i(r.uField, 0);
+      gl.uniform2i(r.uFieldSize, grid.cols, grid.rows);
+      gl.uniform1f(r.uCell, CELL);
       gl.drawArrays(gl.TRIANGLES, 0, RAY_COLUMNS * RAY_ROWS * 6);
       gl.activeTexture(gl.TEXTURE0);
     }

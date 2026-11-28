@@ -58,6 +58,7 @@
     const view = event.viewTransition;
     if (!view) return;
     view.ready.catch(() => {});
+    view.finished.catch(() => {});
     const targetUrl = event.activation?.entry?.url;
     if (!pending || !targetUrl || new URL(targetUrl).pathname !== pending.path) view.skipTransition();
   });
@@ -80,9 +81,7 @@
       path: url.pathname,
       time: 0,
     };
-    setOrigin(pending);
-    root.dataset.waveMode = 'outgoing';
-    timer = setTimeout(() => {
+    function navigate() {
       try {
         pending.time = Date.now();
         sessionStorage.setItem(key, JSON.stringify(pending));
@@ -90,6 +89,9 @@
         // The standard link navigation still works.
       }
       location.assign(url.href);
-    }, confirmation ? 360 : 165);
+    }
+    // Give the slider time to show its green confirmation before the page reveal.
+    if (confirmation) timer = setTimeout(navigate, 180);
+    else navigate();
   };
 })();
