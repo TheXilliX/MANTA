@@ -33,7 +33,8 @@ function page({base, title, description, content, classes, programPage=false, ho
     '<link rel="stylesheet" href="' + base + 'assets/site.css">' +
     (!home ? '<link rel="stylesheet" href="' + base + 'assets/program.css">' : '') +
     (home || programPage ? '<link rel="stylesheet" href="' + base + 'assets/hero-motion.css">' : '') +
-    (home || programPage ? '<script src="' + base + 'assets/dither.js" defer fetchpriority="high"></script>' : '') +
+    (home ? '<script src="' + base + 'assets/dither.js" defer fetchpriority="high"></script>' : '') +
+    (programPage ? '<script src="' + base + 'assets/waves.js" defer></script>' : '') +
     '<script src="' + base + 'assets/site.js" defer></script></head>' +
     '<body class="' + classes + '"><a class="skip-link" href="#main">К содержанию</a>' +
     content + '</body></html>';
@@ -62,8 +63,8 @@ function program() {
   const items = resources.map(section => '<section class="contents-resource"><h2>' +
     escapeHtml(section.title) + '</h2>' + actionLink(section) + '</section>').join('');
   const main = '<main id="main" class="contents-page">' +
-    '<div class="dither-container" aria-hidden="true"><canvas class="dither-canvas"></canvas>' +
-    '<img class="contents-art" data-dither-ray src="../assets/art/hero-ray.png" width="1280" height="853" alt="" fetchpriority="high"></div>' +
+    '<div class="contents-scene" aria-hidden="true"><canvas class="contents-waves"></canvas>' +
+    '<img class="contents-art" src="../assets/art/hero-ray.png" width="1280" height="853" alt="" fetchpriority="high"></div>' +
     '<div class="contents-layout frame"><div class="contents-lessons"><section class="contents-feature">' +
     '<h1 lang="en">' + escapeHtml(mainLesson.title) + '</h1>' +
     actionLink(mainLesson, 'edge-button--primary') +

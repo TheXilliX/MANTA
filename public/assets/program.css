@@ -3,52 +3,54 @@
   isolation: isolate;
 }
 
-.contents-page .dither-container::after {
-  background:
-    linear-gradient(90deg, #111216ef, #111216ad 36%, #11121619 59%, transparent 76%),
-    linear-gradient(0deg, #111216a8, transparent 30%);
-}
-
-.contents-page .dither-container:has(.dither-canvas:not([data-dither-ready]))::before {
-  content: '';
+.contents-scene {
   position: absolute;
-  inset: -9%;
+  z-index: -1;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
   background:
-    repeating-conic-gradient(#1d1e22 0 25%, transparent 0 50%) 0 0 / 4px 4px,
-    radial-gradient(ellipse at 76% 32%, #697078, transparent 42%),
-    radial-gradient(ellipse at 95% 79%, #66686d, transparent 48%),
-    radial-gradient(ellipse at 10% 87%, #535559, transparent 35%),
-    var(--coal);
-  animation: contents-fallback-wave 13s ease-in-out infinite alternate;
+    radial-gradient(ellipse at 78% 46%, #353e4c, transparent 51%),
+    linear-gradient(125deg, #111216 28%, #191c24 65%, #101115);
 }
 
-@keyframes contents-fallback-wave {
-  from { transform: translate(-3%, -2%); }
-  to { transform: translate(4%, 4%) scale(1.07); }
+.contents-waves {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.contents-waves:not([data-waves-ready]) { visibility: hidden; }
+
+.contents-scene::after {
+  position: absolute;
+  inset: 0;
+  content: '';
+  background:
+    linear-gradient(90deg, #111216e8 5%, #111216c7 36%, #11121629 64%, #11121620 100%),
+    linear-gradient(0deg, #11121681, transparent 28%);
 }
 
 .contents-art {
   position: absolute;
+  z-index: 1;
   display: block;
-  width: min(53%, 75rem);
+  width: min(51%, 73rem);
   height: auto;
-  right: 1.5%;
+  right: 2.4%;
   top: 50%;
   transform: translateY(-50%);
-  filter: grayscale(1) brightness(.84);
+  filter: saturate(.64) drop-shadow(0 .9rem 1.2rem #080b14cc);
 }
-
-.dither-canvas[data-ray-ready] + .contents-art { opacity: 0; }
 
 @media (prefers-reduced-motion: no-preference) {
-  .dither-canvas:not([data-ray-ready]) + .contents-art {
-    animation: contents-fallback-ray 13s ease-in-out infinite alternate;
-  }
-}
+  .contents-art { animation: ray-hover 11s ease-in-out infinite; }
 
-@keyframes contents-fallback-ray {
-  from { opacity: .83; }
-  to { opacity: 1; }
+  @keyframes ray-hover {
+    50% { translate: 0 -.65rem; }
+  }
 }
 
 .contents-layout {
@@ -132,8 +134,10 @@
 .lesson-placeholder .edge-button { margin-top: 1.75rem; }
 
 @media (max-width: 760px) and (orientation: portrait) {
-  .contents-page .dither-container::after {
-    background: linear-gradient(0deg, #111216cf, #111216b3 42%, #11121624 67%, transparent 78%);
+  .contents-scene { background-position: center top; }
+
+  .contents-scene::after {
+    background: linear-gradient(0deg, #111216e8, #111216c9 40%, #11121640 66%, #11121612 100%);
   }
 
   .contents-art {
@@ -174,8 +178,4 @@
   }
 
   .contents-resource h2 { font-size: clamp(1.14rem, 4.8vw, 1.65rem); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .contents-page .dither-container::before { animation: none; }
 }
