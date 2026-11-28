@@ -1,9 +1,21 @@
+// Tech Text sweep and letter reveal adapted from David Haz's React Bits.
+// Source: https://github.com/DavidHDev/react-bits/blob/main/src/content/TextAnimations/TechText/TechText.jsx
+// MIT + Commons Clause. See the license notice in waves.js.
 (() => {
   const motion = matchMedia('(prefers-reduced-motion: reduce)');
   const touchScreen = matchMedia('(pointer: coarse)');
   const focusTitle = document.querySelector('.focus-title');
   const focusWords = [...focusTitle.querySelectorAll('[data-focus-word]')];
   const title = document.querySelector('[data-fuzzy]');
+  const techTitle = document.querySelector('.tech-title');
+  const techInk = techTitle.querySelector('.tech-ink');
+  const techCanvas = document.createElement('canvas');
+  const tech = techCanvas.getContext('2d');
+  if (tech) {
+    techCanvas.className = 'tech-canvas';
+    techCanvas.setAttribute('aria-hidden', 'true');
+    techTitle.append(techCanvas);
+  }
   const canvas = document.createElement('canvas');
   const source = document.createElement('canvas');
   const context = canvas.getContext('2d');
@@ -24,6 +36,99 @@
   let strip = 0;
   let idleAmount = 0;
   let activeAmount = 0;
+  let techRatio = 1;
+  let techPadding = 10;
+  let techBaseline;
+  let techColor;
+  let techAccent;
+  let techGlyphs = [];
+  let techFrame;
+  let techPointer;
+  let techClock = 0;
+  let techPrevious = 0;
+  let techCursor;
+
+  function measureTech() {
+    if (!tech) return;
+    const box = techTitle.getBoundingClientRect();
+    const ink = techInk.getBoundingClientRect();
+    const style = getComputedStyle(techInk);
+    techRatio = Math.min(devicePixelRatio || 1, 1.5);
+    techPadding = Math.ceil(Math.max(8, parseFloat(style.fontSize) * .34));
+    techTitle.style.setProperty('--tech-padding', techPadding + 'px');
+    techCanvas.width = Math.ceil((box.width + 2 * techPadding) * techRatio);
+    techCanvas.height = Math.ceil((box.height + 2 * techPadding) * techRatio);
+    tech.setTransform(techRatio, 0, 0, techRatio, 0, 0);
+    tech.font = style.fontWeight + ' ' + style.fontSize + ' ' + style.fontFamily;
+    if ('letterSpacing' in tech) tech.letterSpacing = style.letterSpacing;
+    tech.lineJoin = 'round';
+    tech.lineWidth = 1;
+    techColor = style.color;
+    techAccent = style.getPropertyValue('--blue').trim() || '#82c4ff';
+    const word = techInk.textContent;
+    const metrics = tech.measureText(word);
+    const ascent = metrics.fontBoundingBoxAscent ?? parseFloat(style.fontSize) * .8;
+    const descent = metrics.fontBoundingBoxDescent ?? parseFloat(style.fontSize) * .2;
+    techBaseline = techPadding + (box.height + ascent - descent) / 2;
+    let prefix = '';
+    techGlyphs = [...word].map(char => {
+      prefix += char;
+      const own = tech.measureText(char);
+      const x = techPadding + ink.left - box.left + tech.measureText(prefix).width - own.width;
+      const bounds = [
+        x - own.actualBoundingBoxLeft - 3,
+        techBaseline - own.actualBoundingBoxAscent - 3,
+        x + own.actualBoundingBoxRight + 3,
+        techBaseline + own.actualBoundingBoxDescent + 3,
+      ];
+      return { char, x, bounds, center: (bounds[0] + bounds[2]) / 2, outline: 0 };
+    });
+    techFrame = undefined;
+    techCursor = undefined;
+  }
+
+  function drawTech(now) {
+    if (!techGlyphs.length) return;
+    const dt = Math.min(85, techPrevious ? now - techPrevious : 34);
+    techPrevious = now;
+    if (techPointer === undefined) techClock += dt;
+    const first = techGlyphs[0].center;
+    const last = techGlyphs.at(-1).center;
+    const target = techPointer ?? first + (last - first) * (.5 - .5 * Math.cos(techClock / 580));
+    const glide = 1 - Math.exp(-dt / 80);
+    techCursor ??= target;
+    techCursor += (target - techCursor) * glide;
+    const selected = techGlyphs.reduce((closest, glyph) =>
+      Math.abs(glyph.center - techCursor) < Math.abs(closest.center - techCursor) ? glyph : closest);
+    tech.clearRect(0, 0, techCanvas.width / techRatio, techCanvas.height / techRatio);
+    for (const glyph of techGlyphs) {
+      glyph.outline += (Number(glyph === selected) - glyph.outline) * glide;
+      tech.globalAlpha = 1 - glyph.outline;
+      tech.fillStyle = techColor;
+      tech.fillText(glyph.char, glyph.x, techBaseline);
+      tech.globalAlpha = glyph.outline;
+      tech.strokeStyle = techColor;
+      tech.setLineDash([2.1, 1.4]);
+      tech.strokeText(glyph.char, glyph.x, techBaseline);
+    }
+
+    techFrame = (techFrame ?? selected.bounds).map((value, index) => value + (selected.bounds[index] - value) * glide);
+    const [left, top, right, bottom] = techFrame;
+    tech.globalAlpha = .44;
+    tech.strokeStyle = techAccent;
+    tech.setLineDash([]);
+    tech.strokeRect(left, top, right - left, bottom - top);
+    tech.globalAlpha = .94;
+    tech.fillStyle = techAccent;
+    for (const x of [left, right]) {
+      for (const y of [top, bottom]) tech.fillRect(x - 1.4, y - 1.4, 2.8, 2.8);
+    }
+    const sweep = ((now / 530) % 1) * (right - left);
+    tech.fillRect(left + sweep - 1.3, top - 1.3, 2.6, 2.6);
+    tech.fillRect(right - sweep - 1.3, bottom - 1.3, 2.6, 2.6);
+    tech.globalAlpha = 1;
+    if (!techTitle.hasAttribute('data-tech-ready')) techTitle.setAttribute('data-tech-ready', '');
+  }
 
   function setFocus(index) {
     if (motion.matches) return;
@@ -88,6 +193,7 @@
     if (!pinned && now >= nextFocus) setFocus((current + 1) % focusWords.length);
     if (now - lastDraw >= (touchScreen.matches ? 66 : 34)) {
       drawTitle();
+      drawTech(now);
       lastDraw = now;
     }
     frame = requestAnimationFrame(tick);
@@ -105,6 +211,7 @@
     if (!ready || motion.matches || departing) return;
     if (touchScreen.matches && document.documentElement.hasAttribute('data-wave-mode')) return;
     measureTitle();
+    measureTech();
     setFocus(current);
     wake();
   }
@@ -120,6 +227,16 @@
       nextFocus = performance.now() + focusHold;
     });
   });
+
+  function trackTech(event) {
+    techPointer = event.clientX - techTitle.getBoundingClientRect().left + techPadding;
+  }
+  function releaseTech() { techPointer = undefined; }
+  techTitle.addEventListener('pointermove', trackTech, { passive: true });
+  techTitle.addEventListener('pointerdown', trackTech, { passive: true });
+  techTitle.addEventListener('pointerleave', releaseTech);
+  techTitle.addEventListener('pointercancel', releaseTech);
+  techTitle.addEventListener('pointerup', event => { if (event.pointerType !== 'mouse') releaseTech(); });
 
   title.addEventListener('pointerdown', event => {
     if (event.pointerType !== 'touch') return;
@@ -145,6 +262,7 @@
     cancelAnimationFrame(frame);
     frame = 0;
     pinned = false;
+    releaseTech();
   });
   window.addEventListener('pageshow', event => {
     if (!event.persisted) return;
@@ -156,6 +274,7 @@
   const observer = new ResizeObserver(refresh);
   observer.observe(focusTitle);
   observer.observe(title);
+  observer.observe(techTitle);
   document.fonts.ready.then(() => {
     ready = true;
     refresh();

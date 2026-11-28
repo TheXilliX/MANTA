@@ -187,14 +187,14 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outlin
   mask-composite: exclude;
 }
 :is(.slide-commit[data-slide-ready], .edge-button)::before {
-  background: radial-gradient(88px circle at var(--edge-light-x, 50%) var(--edge-light-y, 50%), var(--edge-core, var(--white)), var(--edge-shine, var(--blue)) 28%, transparent 95%);
+  background: radial-gradient(var(--edge-light-radius, 88px) circle at var(--edge-light-x, 50%) var(--edge-light-y, 50%), var(--edge-core, var(--white)), var(--edge-shine, var(--blue)) 28%, transparent 95%);
   transition: opacity .14s ease;
 }
 .slide-commit[data-slide-ready]::after {
   background: linear-gradient(90deg, var(--blue), #a6d6ff max(0px, calc(var(--slide-rim-front) - 26px)), transparent calc(var(--slide-rim-front) + 18px));
   transition: opacity .15s ease;
 }
-:is(.slide-commit, .edge-button)[data-edge-lit]:not([data-slide-held])::before { opacity: 1; }
+:is(.slide-commit, .edge-button)[data-edge-lit]:not([data-slide-held])::before { opacity: var(--edge-light-opacity, 1); }
 .slide-commit[data-slide-held]::after { opacity: 1; }
 .slide-commit[data-slide-ready] .slide-commit__fallback { display: none; }
 .slide-commit[data-slide-ready] .slide-commit__label {

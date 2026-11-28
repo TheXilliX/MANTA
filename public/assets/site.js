@@ -10,8 +10,7 @@
     control.removeAttribute('data-edge-lit');
     control.style.removeProperty('--edge-light-x');
     control.style.removeProperty('--edge-light-y');
-    control.style.removeProperty('--edge-strength');
-    control.style.removeProperty('--edge-white');
+    control.style.removeProperty('--edge-light-opacity');
   }
 
   const slide = document.querySelector('.home .hero-action a.slide-commit');
@@ -110,22 +109,15 @@
         const x = Math.max(0, Math.min(width, px - left));
         const y = Math.max(0, Math.min(height, py - top));
         const distance = Math.hypot(px - left - x, py - top - y);
-        if (control.closest('.contents-lessons')) {
-          // Blend toward the center near the button so the two edges share the light.
-          const lightY = y + (height / 2 - y) * Math.exp(-distance / 42);
-          control.style.setProperty('--edge-light-x', x + 'px');
-          control.style.setProperty('--edge-light-y', lightY + 'px');
-          control.style.setProperty('--edge-strength', String(Math.exp(-distance / 132)));
-          control.style.setProperty('--edge-white', Math.round(100 * Math.exp(-distance / 48)) + '%');
-          return;
-        }
+        const lesson = control.closest('.contents-lessons');
         if (control.matches('[data-slide-held], [data-slide-done]') ||
-            (control !== slide && distance > 64)) {
+            (control !== slide && !lesson && distance > 64)) {
           if (control.hasAttribute('data-edge-lit')) clearEdgeGlow(control);
           return;
         }
         control.style.setProperty('--edge-light-x', x + 'px');
         control.style.setProperty('--edge-light-y', y + 'px');
+        if (lesson) control.style.setProperty('--edge-light-opacity', String(.24 + .76 * Math.exp(-distance / 132)));
         control.setAttribute('data-edge-lit', '');
       });
     }

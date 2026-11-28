@@ -113,38 +113,21 @@
 }
 
 .contents-lessons .edge-button {
-  --rim-base: #6b9ec9;
-  --rim-blue: #72b9f7;
-  --rim-white: #f5f8fc;
-  --rim-white-share: 1;
-  --rim-lift: 65px;
-  --rim-idle: .26;
+  --edge-light-radius: 60px;
+  box-shadow: inset 0 0 0 1px #f5f8fc28;
   --press-fill: #28517b;
 }
 
 .contents-lessons .edge-button--primary {
-  --rim-base: #61a6e8;
-  --rim-blue: #408fdd;
-  --rim-white: #dfedff;
-  --rim-white-share: .64;
-  --rim-lift: 84px;
-  --rim-idle: .46;
+  --edge-light-radius: 88px;
+  --edge-core: #a5d3ff;
+  --edge-shine: #4387c8;
   --press-fill: #b6dafa;
-  box-shadow: inset 0 0 0 1px #819fbb;
-}
-
-.contents-lessons .edge-button::before {
-  background: radial-gradient(
-    ellipse var(--rim-lift) 92% at var(--edge-light-x, 50%) var(--edge-light-y, 0%),
-    color-mix(in srgb, var(--rim-blue), var(--rim-white) calc(var(--edge-white, 0%) * var(--rim-white-share))),
-    var(--rim-blue) 50%, transparent 100%
-  ) var(--rim-base);
-  opacity: calc(var(--rim-idle) + (1 - var(--rim-idle)) * var(--edge-strength, 0));
-  transition: opacity .16s ease-out;
+  box-shadow: inset 0 0 0 1px #98afc6;
 }
 
 .contents-lessons .edge-button[data-edge-commit] {
-  box-shadow: inset 0 0 0 1px var(--rim-blue);
+  box-shadow: inset 0 0 0 1px var(--edge-shine, var(--blue));
 }
 
 .contents-lessons .edge-button[data-edge-commit]::after {
@@ -191,27 +174,22 @@
   opacity: 0;
 }
 
-.tech-title { white-space: nowrap; }
-.tech-letter { position: relative; }
+.tech-title {
+  white-space: nowrap;
+  touch-action: pan-y;
+}
 
-.tech-letter::after {
-  content: '';
+.tech-canvas {
+  display: none;
   position: absolute;
-  inset: -3px 1px;
-  --dot: linear-gradient(var(--blue), var(--blue));
-  border: 1px dashed #82c4ff52;
-  background: var(--dot) top left, var(--dot) top right, var(--dot) bottom left, var(--dot) bottom right;
-  background-size: 3px 3px;
-  background-repeat: no-repeat;
-  opacity: 0;
+  inset: calc(-1 * var(--tech-padding));
+  width: calc(100% + 2 * var(--tech-padding));
+  height: calc(100% + 2 * var(--tech-padding));
   pointer-events: none;
-  transition: opacity .16s ease;
 }
 
-@media (hover: hover) and (pointer: fine) {
-  .tech-title:hover .tech-letter::after { opacity: .6; }
-  .tech-title:hover .tech-letter:hover::after { opacity: 1; }
-}
+.tech-title[data-tech-ready] > .tech-canvas { display: block; }
+.tech-title[data-tech-ready] > .tech-ink { opacity: 0; }
 
 .focus-title .word-brackets {
   --corner: linear-gradient(#82c4ffe0, #82c4ffe0);
@@ -342,7 +320,6 @@
     animation-duration: .15s;
   }
 
-  .tech-title:active .tech-letter::after { opacity: .65; }
 }
 
 @media (pointer: coarse) and (prefers-reduced-motion: no-preference) {
@@ -358,5 +335,7 @@
   .fuzzy-word[data-fuzzy-ready] > .fuzzy-ink { opacity: 1; }
   .fuzzy-word[data-fuzzy-ready] > canvas, .focus-title .word-brackets { display: none; }
   .focus-title[data-focus-ready] .focus-word:not([data-focus-current]) { filter: none; opacity: 1; }
-  .tech-letter::after, .contents-lessons .edge-button::before { transition: none; }
+  .tech-title[data-tech-ready] > .tech-canvas { display: none; }
+  .tech-title[data-tech-ready] > .tech-ink { opacity: 1; }
+  .contents-lessons .edge-button::before { transition: none; }
 }

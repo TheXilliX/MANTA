@@ -67,13 +67,12 @@ function program() {
     escapeHtml(word) + '</span></span>';
   const focusWord = word => '<span class="focus-word" data-focus-word>' + escapeHtml(word) + '</span>';
   const brackets = '<span class="word-brackets" aria-hidden="true"></span>';
-  const techWord = word => [...word].map(letter => '<span class="tech-letter">' + escapeHtml(letter) + '</span>').join('');
   const actionLink = (section, modifier = '') =>
     '<a class="edge-button' + (modifier ? ' ' + modifier : '') + '" href="' + lessonLink('../', section.id) +
     '" aria-label="Открыть урок — ' + escapeHtml(section.title) + '">Открыть урок</a>';
   const items = resources.map(section => {
     const profile = section.id === 'profile';
-    const title = profile ? section.title.split(' ').map(focusWord).join(' ') : techWord(section.title);
+    const title = profile ? section.title.split(' ').map(focusWord).join(' ') : '<span class="tech-ink">' + escapeHtml(section.title) + '</span>';
     return '<section class="contents-resource"><h2 class="' + (profile ? 'focus-title' : 'tech-title') + '">' +
       title + (profile ? brackets : '') + '</h2>' + actionLink(section) + '</section>';
   }).join('');
