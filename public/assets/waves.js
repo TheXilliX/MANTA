@@ -35,12 +35,40 @@
 (() => {
 const STYLES = { solid: 0, dashed: 1 };
 const CELL = 12;
-const STEP = 7;
+const STEP = 4;
 const INTRO_SECONDS = 2.2;
 const RIPPLE_SPEED = 640;
 const RIPPLE_WIDTH = 64;
 const RIPPLE_IMPULSE = (RIPPLE_WIDTH * Math.sqrt(Math.PI / 2)) / RIPPLE_SPEED;
 const MAX_VERTICES = 1600000;
+
+const FLOW_NOISE = `const vec2 GRADIENTS[12] = vec2[12](
+  vec2(1.0, 1.0), vec2(-1.0, 1.0), vec2(1.0, -1.0), vec2(-1.0, -1.0),
+  vec2(1.0, 0.0), vec2(-1.0, 0.0), vec2(1.0, 0.0), vec2(-1.0, 0.0),
+  vec2(0.0, 1.0), vec2(0.0, -1.0), vec2(0.0, 1.0), vec2(0.0, -1.0)
+);
+
+vec2 gradient(vec2 cell) {
+  uvec2 q = uvec2(ivec2(cell) + 65536) + uvec2(uSeed * 7919u, uSeed * 104729u);
+  q = 1103515245u * ((q >> 1u) ^ q.yx);
+  uint n = 1103515245u * (q.x ^ (q.y >> 3u));
+  return GRADIENTS[(n >> 16u) % 12u];
+}
+
+float ease(float t) {
+  return t * t * t * (t * (t * 6.0 - 15.0) + 10.0);
+}
+
+float perlin(vec2 p) {
+  vec2 i = floor(p);
+  vec2 f = p - i;
+  float n00 = dot(gradient(i), f);
+  float n10 = dot(gradient(i + vec2(1.0, 0.0)), f - vec2(1.0, 0.0));
+  float n01 = dot(gradient(i + vec2(0.0, 1.0)), f - vec2(0.0, 1.0));
+  float n11 = dot(gradient(i + vec2(1.0, 1.0)), f - vec2(1.0, 1.0));
+  vec2 u = vec2(ease(f.x), ease(f.y));
+  return mix(mix(n00, n10, u.x), mix(n01, n11, u.x), u.y);
+}`;
 
 const VERTEX = `#version 300 es
 precision highp float;
@@ -69,33 +97,7 @@ out float vEnergy;
 out float vShow;
 out float vPhase;
 
-const vec2 GRADIENTS[12] = vec2[12](
-  vec2(1.0, 1.0), vec2(-1.0, 1.0), vec2(1.0, -1.0), vec2(-1.0, -1.0),
-  vec2(1.0, 0.0), vec2(-1.0, 0.0), vec2(1.0, 0.0), vec2(-1.0, 0.0),
-  vec2(0.0, 1.0), vec2(0.0, -1.0), vec2(0.0, 1.0), vec2(0.0, -1.0)
-);
-
-vec2 gradient(vec2 cell) {
-  uvec2 q = uvec2(ivec2(cell) + 65536) + uvec2(uSeed * 7919u, uSeed * 104729u);
-  q = 1103515245u * ((q >> 1u) ^ q.yx);
-  uint n = 1103515245u * (q.x ^ (q.y >> 3u));
-  return GRADIENTS[(n >> 16u) % 12u];
-}
-
-float ease(float t) {
-  return t * t * t * (t * (t * 6.0 - 15.0) + 10.0);
-}
-
-float perlin(vec2 p) {
-  vec2 i = floor(p);
-  vec2 f = p - i;
-  float n00 = dot(gradient(i), f);
-  float n10 = dot(gradient(i + vec2(1.0, 0.0)), f - vec2(1.0, 0.0));
-  float n01 = dot(gradient(i + vec2(0.0, 1.0)), f - vec2(0.0, 1.0));
-  float n11 = dot(gradient(i + vec2(1.0, 1.0)), f - vec2(1.0, 1.0));
-  vec2 u = vec2(ease(f.x), ease(f.y));
-  return mix(mix(n00, n10, u.x), mix(n01, n11, u.x), u.y);
-}
+${FLOW_NOISE}
 
 vec2 node(ivec2 cell) {
   return texelFetch(uField, clamp(cell, ivec2(0), uFieldSize - 1), 0).xy;
@@ -215,6 +217,56 @@ void main() {
   outColor = vec4(mix(uColor, uAccent, heat) * alpha, alpha);
 }`;
 
+
+const RAY_COLUMNS = 24;
+const RAY_ROWS = 16;
+const RAY_VERTEX = `#version 300 es
+precision highp float;
+precision highp int;
+uniform vec2 uView;
+uniform vec4 uRayRect;
+uniform vec2 uAxis;
+uniform vec2 uAmplitude;
+uniform vec2 uFrequency;
+uniform vec2 uDrift;
+uniform float uTwist;
+uniform uint uSeed;
+out vec2 vTexCoord;
+
+${FLOW_NOISE}
+
+const vec2 CORNERS[6] = vec2[6](
+  vec2(0, 0), vec2(1, 0), vec2(0, 1), vec2(1, 0), vec2(1, 1), vec2(0, 1)
+);
+
+void main() {
+  int quad = gl_VertexID / 6;
+  vec2 origin = vec2(quad % ${RAY_COLUMNS}, quad / ${RAY_COLUMNS});
+  vTexCoord = (origin + CORNERS[gl_VertexID % 6]) / vec2(${RAY_COLUMNS}.0, ${RAY_ROWS}.0);
+  vec2 pixel = uRayRect.xy + vTexCoord * uRayRect.zw;
+  vec2 center = pixel - uView * 0.5;
+  vec2 rest = vec2(dot(center, uAxis), dot(center, vec2(-uAxis.y, uAxis.x)));
+  float turn = perlin(rest * uFrequency + uDrift) * 12.0 * uTwist;
+  float flex = mix(0.3, 1.0, smoothstep(0.12, 0.5, abs(vTexCoord.x - 0.44)));
+  vec2 bend = vec2(cos(turn) * 0.25, sin(turn) * 0.22) * uAmplitude * flex;
+  pixel += vec2(bend.x * uAxis.x - bend.y * uAxis.y, bend.x * uAxis.y + bend.y * uAxis.x);
+  vec2 clip = pixel / uView * 2.0 - 1.0;
+  gl_Position = vec4(clip.x, -clip.y, 0.0, 1.0);
+}`;
+
+const RAY_FRAGMENT = `#version 300 es
+precision highp float;
+uniform sampler2D uRayImage;
+in vec2 vTexCoord;
+out vec4 outColor;
+
+void main() {
+  vec4 ink = texture(uRayImage, vTexCoord);
+  float gray = dot(ink.rgb, vec3(0.2126, 0.7152, 0.0722));
+  vec3 tone = mix(vec3(gray), ink.rgb, 0.64);
+  outColor = vec4(tone * ink.a, ink.a);
+}`;
+
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 
 const smootherstep = value => {
@@ -232,9 +284,9 @@ const compile = (gl, type, source) => {
   return null;
 };
 
-const link = gl => {
-  const vertex = compile(gl, gl.VERTEX_SHADER, VERTEX);
-  const fragment = compile(gl, gl.FRAGMENT_SHADER, FRAGMENT);
+const link = (gl, vertexSource, fragmentSource) => {
+  const vertex = compile(gl, gl.VERTEX_SHADER, vertexSource);
+  const fragment = compile(gl, gl.FRAGMENT_SHADER, fragmentSource);
   const program = gl.createProgram();
   if (!vertex || !fragment || !program) return null;
   gl.attachShader(program, vertex);
@@ -263,16 +315,16 @@ const link = gl => {
     spacing: 10,
     lineWidth: 1,
     rotation: -23,
-    amplitude: 48,
-    scale: 1.08,
-    twist: 0.85,
-    speed: 0.6,
+    amplitude: 32,
+    scale: 1,
+    twist: 1,
+    speed: 1,
     variation: 0,
     mouseInteraction: true,
-    mouseRadius: 155,
-    mouseStrength: 0.48,
-    bounce: 0.42,
-    returnDuration: 1.45,
+    mouseRadius: 175,
+    mouseStrength: 1,
+    bounce: 0.5,
+    returnDuration: 1.4,
     clickRipple: true,
     intro: false,
     fade: 0.16,
@@ -291,9 +343,13 @@ const link = gl => {
     });
     if (!container || !canvas || !gl) return undefined;
 
-    const program = link(gl);
+    const program = link(gl, VERTEX, FRAGMENT);
     if (!program) return undefined;
     const u = program.uniforms;
+    const ray = container.querySelector('.contents-art');
+    const rayProgram = ray ? link(gl, RAY_VERTEX, RAY_FRAGMENT) : null;
+    const rayTexture = rayProgram ? gl.createTexture() : null;
+    let rayRect;
 
     const vao = gl.createVertexArray();
     const texture = gl.createTexture();
@@ -493,6 +549,48 @@ const link = gl => {
       return grid.bottom >= grid.top;
     };
 
+    function updateRayRect() {
+      if (!rayTexture || !ray.naturalWidth || !canvas.hasAttribute('data-ray-ready')) return;
+      const rect = ray.getBoundingClientRect();
+      const stage = container.getBoundingClientRect();
+      rayRect = [rect.left - stage.left, rect.top - stage.top, rect.width, rect.height];
+    }
+
+    function uploadRay() {
+      if (!rayTexture || !ray.complete || !ray.naturalWidth) return;
+      gl.activeTexture(gl.TEXTURE1);
+      gl.bindTexture(gl.TEXTURE_2D, rayTexture);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, ray);
+      gl.activeTexture(gl.TEXTURE0);
+      canvas.dataset.rayReady = 'true';
+      updateRayRect();
+      wake();
+    }
+
+    function renderRay(cos, sin, flowTime) {
+      if (!rayRect) return;
+      const r = rayProgram.uniforms;
+      gl.useProgram(rayProgram.program);
+      gl.activeTexture(gl.TEXTURE1);
+      gl.bindTexture(gl.TEXTURE_2D, rayTexture);
+      gl.uniform1i(r.uRayImage, 1);
+      gl.uniform2f(r.uView, view.width, view.height);
+      gl.uniform4fv(r.uRayRect, rayRect);
+      gl.uniform2f(r.uAxis, cos, sin);
+      const amplitude = reduce ? 0 : settings.amplitude;
+      gl.uniform2f(r.uAmplitude, amplitude, amplitude);
+      gl.uniform2f(r.uFrequency, 0.002 / settings.scale, 0.0015 / settings.scale);
+      gl.uniform2f(r.uDrift, flowTime * 0.025, flowTime * 0.0075);
+      gl.uniform1f(r.uTwist, settings.twist);
+      gl.uniform1ui(r.uSeed, settings.variation);
+      gl.drawArrays(gl.TRIANGLES, 0, RAY_COLUMNS * RAY_ROWS * 6);
+      gl.activeTexture(gl.TEXTURE0);
+    }
+
     const render = () => {
       const s = settings;
       const angle = (s.rotation * Math.PI) / 180;
@@ -560,15 +658,12 @@ const link = gl => {
       gl.uniform1f(u.uFade, s.fade);
       gl.uniform1f(u.uOpacity, s.opacity);
       gl.drawArraysInstanced(gl.TRIANGLE_STRIP, 0, samples * 2, lines);
+      renderRay(cos, sin, flowTime);
     };
 
     const frame = now => {
       raf = 0;
       if (!visible || document.hidden) return;
-      if (last && !reduce && now - last < 1000 / 36) {
-        wake();
-        return;
-      }
       const s = settings;
       const dt = last ? clamp((now - last) / 1000, 0.0005, 0.05) : 1 / 60;
       last = now;
@@ -596,6 +691,7 @@ const link = gl => {
       canvas.height = Math.max(1, Math.round(height * ratio));
       view.ratio = canvas.width / width;
       rebuild();
+      updateRayRect();
       render();
       wake();
     };
@@ -664,6 +760,8 @@ const link = gl => {
     document.addEventListener('visibilitychange', onVisibility);
     canvas.addEventListener('webglcontextlost', onContextLost, { once: true });
     motion.addEventListener('change', onMotionChange);
+    ray?.addEventListener('load', uploadRay);
+    uploadRay();
     resize();
     canvas.dataset.wavesReady = 'true';
 
@@ -679,6 +777,8 @@ const link = gl => {
     function onContextLost(event) {
       event.preventDefault();
       delete canvas.dataset.wavesReady;
+      delete canvas.dataset.rayReady;
+      ray?.removeEventListener('load', uploadRay);
       cancelAnimationFrame(raf);
       resizeObserver.disconnect();
       intersection.disconnect();

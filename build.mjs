@@ -28,7 +28,9 @@ function page({base, title, description, content, classes, programPage=false, ho
   return '<!doctype html>\n<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">' +
     '<meta name="description" content="' + escapeHtml(description) + '"><title>' + escapeHtml(title) + '</title>' +
     '<link rel="icon" href="data:,">' +
-    (home || programPage ? '<style>@view-transition{navigation:auto}@media(prefers-reduced-motion:reduce){@view-transition{navigation:none}}</style>' : '') +
+    '<style>@view-transition{navigation:auto}@media(prefers-reduced-motion:reduce){@view-transition{navigation:none}}</style>' +
+    '<script src="' + base + 'assets/course-transition.js"></script>' +
+    '<link rel="stylesheet" href="' + base + 'assets/course-transition.css">' +
     (home ? '<script>if(matchMedia("(prefers-reduced-motion: no-preference)").matches&&performance.getEntriesByType("navigation")[0]?.type!=="back_forward"){document.documentElement.dataset.heroIntro="";setTimeout(()=>{if(!document.querySelector("[data-dither-ready]"))document.documentElement.dataset.heroReveal=""},1600)}</script>' : '') +
     '<link rel="stylesheet" href="' + base + 'assets/site.css">' +
     (!home ? '<link rel="stylesheet" href="' + base + 'assets/program.css">' : '') +
@@ -64,7 +66,7 @@ function program() {
     escapeHtml(section.title) + '</h2>' + actionLink(section) + '</section>').join('');
   const main = '<main id="main" class="contents-page">' +
     '<div class="contents-scene" aria-hidden="true"><canvas class="contents-waves"></canvas>' +
-    '<img class="contents-art" src="../assets/art/hero-ray.png" width="1280" height="853" alt="" fetchpriority="high"></div>' +
+    '<img class="contents-art" draggable="false" src="../assets/art/hero-ray.png" width="1280" height="853" alt="" fetchpriority="high"></div>' +
     '<div class="contents-layout frame"><div class="contents-lessons"><section class="contents-feature">' +
     '<h1 lang="en">' + escapeHtml(mainLesson.title) + '</h1>' +
     actionLink(mainLesson, 'edge-button--primary') +

@@ -21,24 +21,7 @@
   [data-hero-intro][data-hero-reveal] .hero-action {
     animation: hero-control-in .46s cubic-bezier(.22,.64,.32,1) .78s both;
   }
-  :root:has(body.program)::view-transition-group(root) {
-    animation-duration: .72s;
-  }
 
-  :root:has(body.program)::view-transition-old(root),
-  :root:has(body.program)::view-transition-new(root) {
-    mix-blend-mode: normal;
-  }
-
-  :root:has(body.program)::view-transition-old(root) {
-    animation: home-recede .72s cubic-bezier(.3,.65,.3,1) both;
-  }
-
-  :root:has(body.program)::view-transition-new(root) {
-    animation: program-page-turn .72s cubic-bezier(.25,.65,.2,1) both;
-    transform-origin: right center;
-    mask-image: linear-gradient(to left, black calc(var(--reveal-edge) - 8%), transparent var(--reveal-edge));
-  }
 }
 
 @keyframes hero-curtain-in {
@@ -52,15 +35,4 @@
   to { --reveal-edge: 120%; visibility: visible; opacity: 1; filter: none; }
 }
 
-@keyframes home-recede {
-  to { opacity: .32; transform: translateX(-8%) scale(.98); }
-}
-
-@keyframes program-page-turn {
-  from {
-    --reveal-edge: -4%;
-    transform: perspective(1400px) rotateY(-13deg);
-  }
-  to { --reveal-edge: 110%; transform: perspective(1400px) rotateY(0); }
-}
 @media (prefers-reduced-motion: reduce) { .slide-commit { transition: none; } }

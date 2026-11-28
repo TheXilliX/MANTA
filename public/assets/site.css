@@ -31,14 +31,13 @@
 }
 *, *::before, *::after { box-sizing: border-box; }
 [hidden] { display: none !important; }
-body { margin: 0; background: var(--bg); color: var(--ink); }
+body { margin: 0; background: var(--bg); color: var(--ink); -webkit-user-select: none; user-select: none; }
 .dark { color-scheme: dark; --bg: var(--coal); --ink: var(--white); --muted: #bac4cf; --accent: var(--blue); --rule: #f5f8fc30; --surface: #b8d7f513; }
 .light { color-scheme: light; --bg: var(--cloud); --ink: var(--coal); --muted: #425364; --accent: var(--link); --rule: #162d4933; --surface: #38628b10; }
 h1,h2,h3,p,figure,blockquote,dl,dd { margin: 0; }
 a { color: inherit; text-underline-offset: .23em; }
 button { font: inherit; color: inherit; }
 a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 5px; }
-::selection { background: #82c4ff; color: #111216; }
 .frame { width: min(100% - 2 * var(--gutter), 96rem); margin-inline: auto; }
 .skip-link { position: absolute; z-index: 10; top: .75rem; left: var(--gutter); padding: .8rem 1rem; color: var(--bg); background: var(--ink); transform: translateY(-180%); }
 .skip-link:focus { transform: translateY(0); }

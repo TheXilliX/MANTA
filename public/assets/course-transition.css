@@ -1,0 +1,87 @@
+@property --course-wave-radius {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  :root {
+    --course-wave-feather: clamp(20px, 3.7vw, 68px);
+    --course-wave-duration: .88s;
+    --course-wave-ease: cubic-bezier(.3, .55, .22, 1);
+  }
+
+  :root:is([data-wave-mode='outgoing'], [data-wave-mode='fallback'])::after,
+  :root[data-wave-mode='fallback'] main,
+  :root[data-wave-mode='native']::view-transition-new(root),
+  :root[data-wave-mode='native']::view-transition-new(course-glow) {
+    --course-wave-mask: radial-gradient(
+      circle at var(--course-wave-x) var(--course-wave-y),
+      #000 0 max(0px, calc(var(--course-wave-radius) - var(--course-wave-feather))),
+      transparent var(--course-wave-radius)
+    );
+    --course-wave-light: radial-gradient(
+      circle at var(--course-wave-x) var(--course-wave-y),
+      transparent 0 max(0px, calc(var(--course-wave-radius) - 28px)),
+      #82c4ff1a max(0px, calc(var(--course-wave-radius) - 10px)),
+      #c1e2ff94 max(0px, calc(var(--course-wave-radius) - 2px)),
+      #82c4ff62 var(--course-wave-radius),
+      transparent calc(var(--course-wave-radius) + 13px)
+    );
+  }
+
+  :root:is([data-wave-mode='outgoing'], [data-wave-mode='fallback'], [data-wave-mode='native'])::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 20;
+    pointer-events: none;
+  }
+
+  :root[data-wave-mode='outgoing']::after {
+    background: var(--course-wave-light);
+    animation: course-pulse .33s ease-out both;
+  }
+
+  :root[data-wave-mode='fallback'] main {
+    mask-image: var(--course-wave-mask);
+    animation: course-open var(--course-wave-duration) var(--course-wave-ease) both;
+  }
+
+  :root[data-wave-mode='fallback']::after {
+    background: var(--course-wave-light);
+    animation: course-open var(--course-wave-duration) var(--course-wave-ease) both;
+  }
+
+  :root[data-wave-mode='native']::after { view-transition-name: course-glow; }
+
+  :root[data-wave-mode='native']::view-transition-group(root),
+  :root[data-wave-mode='native']::view-transition-old(root),
+  :root[data-wave-mode='native']::view-transition-group(course-glow) { animation: none; }
+
+  :root[data-wave-mode='native']::view-transition-group(course-glow) { z-index: 1; }
+
+  :root[data-wave-mode='native']::view-transition-new(root) {
+    mask-image: var(--course-wave-mask);
+    mix-blend-mode: normal;
+    animation: course-open var(--course-wave-duration) var(--course-wave-ease) both;
+  }
+
+  :root[data-wave-mode='native']::view-transition-new(course-glow) {
+    background: var(--course-wave-light);
+    mix-blend-mode: normal;
+    animation: course-open var(--course-wave-duration) var(--course-wave-ease) both;
+  }
+}
+
+@keyframes course-pulse {
+  0% { --course-wave-radius: 16px; opacity: 0; }
+  27% { opacity: .75; }
+  75% { opacity: .7; }
+  100% { --course-wave-radius: var(--course-wave-start); opacity: 0; }
+}
+
+@keyframes course-open {
+  from { --course-wave-radius: var(--course-wave-start); }
+  to { --course-wave-radius: var(--course-wave-end); }
+}

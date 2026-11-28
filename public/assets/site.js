@@ -1,4 +1,11 @@
 (() => {
+  for (const type of ['selectstart', 'copy', 'cut']) {
+    document.addEventListener(type, event => event.preventDefault());
+  }
+  document.addEventListener('keydown', event => {
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'a') event.preventDefault();
+  });
+
   function clearEdgeGlow(control) {
     control.removeAttribute('data-edge-lit');
     control.style.removeProperty('--edge-light-x');
@@ -10,7 +17,6 @@
   if (handle && typeof slide.setPointerCapture === 'function') {
     const hasModifier = (event) => event.metaKey || event.ctrlKey || event.shiftKey || event.altKey;
     let drag;
-    let navigationTimer;
 
     function openProgram() {
       if (slide.hasAttribute('data-slide-done')) return;
@@ -19,8 +25,7 @@
       slide.removeAttribute('data-slide-held');
       slide.style.setProperty('--slide-progress', '1');
       slide.setAttribute('data-slide-done', '');
-      // Leave the confirmation on screen briefly before the native page transition.
-      navigationTimer = window.setTimeout(() => location.assign(slide.href), 700);
+      window.openCoursePage(slide, true);
     }
 
     function trackDrag(event) {
@@ -68,7 +73,6 @@
       event.preventDefault();
       openProgram();
     });
-    window.addEventListener('pagehide', () => clearTimeout(navigationTimer));
     window.addEventListener('pageshow', (event) => {
       if (!event.persisted) return;
       drag = undefined;
@@ -126,16 +130,12 @@
     motion.addEventListener('change', clearLighting);
   }
 
-  const transitionLink = document.querySelector('.home .hero-action .primary-button');
-  if (transitionLink || document.body.classList.contains('program')) {
-    const target = transitionLink ? new URL(transitionLink.href) : null;
-    window.addEventListener('pageswap', ({ activation, viewTransition }) => {
-      if (!viewTransition) return;
-      // The departing transition's ready promise rejects when skipped or hidden.
-      viewTransition.ready.catch(() => {});
-      const url = activation?.entry?.url;
-      if (!url || new URL(url).pathname !== target?.pathname) viewTransition.skipTransition();
-    });
-  }
-
+  document.addEventListener('click', event => {
+    if (event.defaultPrevented || event.button !== 0 || event.metaKey ||
+        event.ctrlKey || event.shiftKey || event.altKey) return;
+    const link = event.target.closest?.('.contents-lessons a.edge-button, .lesson-placeholder a.edge-button');
+    if (!link) return;
+    event.preventDefault();
+    window.openCoursePage(link);
+  });
 })();
