@@ -687,9 +687,10 @@ const link = (gl, vertexSource, fragmentSource) => {
       renderRay(cos, sin, flowTime);
     };
 
+    let departing = false;
     const frame = now => {
       raf = 0;
-      if (!visible || document.hidden) return;
+      if (!visible || departing || document.hidden) return;
       const s = settings;
       const dt = last ? clamp((now - last) / 1000, 0.0005, 0.05) : 1 / 60;
       last = now;
@@ -704,10 +705,11 @@ const link = (gl, vertexSource, fragmentSource) => {
     };
 
     const wake = () => {
-      if (!raf && visible && !document.hidden) raf = requestAnimationFrame(frame);
+      if (!raf && visible && !departing && !document.hidden) raf = requestAnimationFrame(frame);
     };
 
     const resize = () => {
+      if (departing) return;
       const width = Math.max(1, container.clientWidth);
       const height = Math.max(1, container.clientHeight);
       const ratio = Math.min(window.devicePixelRatio || 1, 1.5);
@@ -767,6 +769,17 @@ const link = (gl, vertexSource, fragmentSource) => {
       last = 0;
       wake();
     };
+    const onCourseStart = () => {
+      departing = true;
+      cancelAnimationFrame(raf);
+      raf = 0;
+    };
+    const onPageShow = event => {
+      if (!event.persisted || !departing) return;
+      departing = false;
+      last = 0;
+      resize();
+    };
 
     const resizeObserver = new ResizeObserver(resize);
     resizeObserver.observe(container);
@@ -782,6 +795,8 @@ const link = (gl, vertexSource, fragmentSource) => {
     window.addEventListener('pointerdown', onPointerDown, { passive: true });
     window.addEventListener('pointerup', onPointerUp, { passive: true });
     window.addEventListener('pointercancel', onPointerUp, { passive: true });
+    window.addEventListener('course-wave-start', onCourseStart);
+    window.addEventListener('pageshow', onPageShow);
     document.documentElement.addEventListener('pointerleave', onPointerLeave);
     document.addEventListener('visibilitychange', onVisibility);
     canvas.addEventListener('webglcontextlost', onContextLost, { once: true });
@@ -812,6 +827,8 @@ const link = (gl, vertexSource, fragmentSource) => {
       window.removeEventListener('pointerdown', onPointerDown);
       window.removeEventListener('pointerup', onPointerUp);
       window.removeEventListener('pointercancel', onPointerUp);
+      window.removeEventListener('course-wave-start', onCourseStart);
+      window.removeEventListener('pageshow', onPageShow);
       document.documentElement.removeEventListener('pointerleave', onPointerLeave);
       document.removeEventListener('visibilitychange', onVisibility);
       motion.removeEventListener('change', onMotionChange);
