@@ -10,6 +10,8 @@
     control.removeAttribute('data-edge-lit');
     control.style.removeProperty('--edge-light-x');
     control.style.removeProperty('--edge-light-y');
+    control.style.removeProperty('--edge-strength');
+    control.style.removeProperty('--edge-white');
   }
 
   const slide = document.querySelector('.home .hero-action a.slide-commit');
@@ -25,7 +27,7 @@
       slide.removeAttribute('data-slide-held');
       slide.style.setProperty('--slide-progress', '1');
       slide.setAttribute('data-slide-done', '');
-      window.openCoursePage(slide, true);
+      window.openCoursePage(slide, { fromSlider: true, delay: 150 });
     }
 
     function trackDrag(event) {
@@ -89,12 +91,12 @@
     const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
     const hover = window.matchMedia('(any-hover: hover) and (any-pointer: fine)');
     let lightFrame = 0;
-    let lightX;
-    let lightY;
+    let pointer;
 
     function clearLighting() {
       cancelAnimationFrame(lightFrame);
       lightFrame = 0;
+      pointer = undefined;
       edgeControls.forEach(clearEdgeGlow);
     }
 
@@ -103,9 +105,26 @@
       const bounds = edgeControls.map(control => control.getBoundingClientRect());
       edgeControls.forEach((control, index) => {
         const { left, top, width, height } = bounds[index];
-        const x = Math.max(0, Math.min(width, lightX - left));
-        const y = Math.max(0, Math.min(height, lightY - top));
-        const distance = Math.hypot(lightX - left - x, lightY - top - y);
+        const [px, py] = pointer;
+        const x = Math.max(0, Math.min(width, px - left));
+        const y = Math.max(0, Math.min(height, py - top));
+        const follow = control.closest('.contents-lessons');
+        if (follow) {
+          const radius = Math.min(width, height) / 2;
+          const axle = Math.max(radius, Math.min(width - radius, px - left));
+          const dx = px - left - axle;
+          const dy = py - top - height / 2;
+          const reach = Math.hypot(dx, dy);
+          const distance = Math.max(0, reach - radius);
+          const edgeX = axle + radius * (reach ? dx / reach : 0);
+          const edgeY = height / 2 + radius * (reach ? dy / reach : -1);
+          control.style.setProperty('--edge-light-x', edgeX + 'px');
+          control.style.setProperty('--edge-light-y', edgeY + 'px');
+          control.style.setProperty('--edge-strength', String(.26 + .74 * Math.exp(-distance / 132)));
+          control.style.setProperty('--edge-white', Math.round(100 * Math.exp(-distance / 48)) + '%');
+          return;
+        }
+        const distance = Math.hypot(px - left - x, py - top - y);
         if (control.matches('[data-slide-held], [data-slide-done]') ||
             (control !== slide && distance > 64)) {
           if (control.hasAttribute('data-edge-lit')) clearEdgeGlow(control);
@@ -119,8 +138,7 @@
 
     document.addEventListener('pointermove', event => {
       if (event.pointerType !== 'mouse' || motion.matches || !hover.matches) return;
-      lightX = event.clientX;
-      lightY = event.clientY;
+      pointer = [event.clientX, event.clientY];
       if (!lightFrame) lightFrame = requestAnimationFrame(updateLighting);
     }, { passive: true });
     document.documentElement.addEventListener('pointerleave', clearLighting);
@@ -130,12 +148,47 @@
     motion.addEventListener('change', clearLighting);
   }
 
+  let openingLesson;
+  let pressTimer;
+  function finishPress(event) {
+    if (event && event.animationName !== 'lesson-button-fill') return;
+    clearTimeout(pressTimer);
+    openingLesson.removeEventListener('animationend', finishPress);
+    openingLesson.setAttribute('data-edge-filled', '');
+    window.openCoursePage(openingLesson, { delay: 45 });
+  }
+
   document.addEventListener('click', event => {
     if (event.defaultPrevented || event.button !== 0 || event.metaKey ||
         event.ctrlKey || event.shiftKey || event.altKey) return;
     const link = event.target.closest?.('.contents-lessons a.edge-button, .lesson-placeholder a.edge-button');
     if (!link) return;
     event.preventDefault();
-    window.openCoursePage(link);
+    if (!link.closest('.contents-lessons') || matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      window.openCoursePage(link);
+      return;
+    }
+    if (openingLesson) return;
+    openingLesson = link;
+    if (event.detail > 0) {
+      const box = link.getBoundingClientRect();
+      link.style.setProperty('--edge-press-x', Math.max(0, Math.min(box.width, event.clientX - box.left)) + 'px');
+      link.style.setProperty('--edge-press-y', Math.max(0, Math.min(box.height, event.clientY - box.top)) + 'px');
+    }
+    link.addEventListener('animationend', finishPress);
+    link.setAttribute('data-edge-commit', '');
+    pressTimer = setTimeout(finishPress, 800);
+  });
+  window.addEventListener('pagehide', () => {
+    clearTimeout(pressTimer);
+    openingLesson?.removeEventListener('animationend', finishPress);
+  });
+  window.addEventListener('pageshow', event => {
+    if (!event.persisted || !openingLesson) return;
+    openingLesson.removeAttribute('data-edge-commit');
+    openingLesson.removeAttribute('data-edge-filled');
+    openingLesson.style.removeProperty('--edge-press-x');
+    openingLesson.style.removeProperty('--edge-press-y');
+    openingLesson = undefined;
   });
 })();

@@ -67,7 +67,7 @@
   window.addEventListener('pagehide', () => clearTimeout(timer));
   window.addEventListener('pageshow', event => { if (event.persisted) closeWave(); });
 
-  window.openCoursePage = (link, confirmation = false) => {
+  window.openCoursePage = (link, { fromSlider = false, delay = 0 } = {}) => {
     if (pending) return;
     if (motion.matches) {
       location.assign(link.href);
@@ -75,12 +75,12 @@
     }
     const url = new URL(link.href);
     const box = link.getBoundingClientRect();
-    const start = Math.round(Math.min(86, box.height * (confirmation ? 1.26 : .78)));
+    const start = Math.round(Math.min(86, box.height * (fromSlider ? 1.26 : .78)));
     pending = {
       x: (box.left + box.width / 2) / innerWidth,
       y: (box.top + box.height / 2) / innerHeight,
       start,
-      fromSlider: confirmation,
+      fromSlider,
       path: url.pathname,
       time: 0,
     };
@@ -93,8 +93,7 @@
       }
       location.assign(url.href);
     }
-    // Give the slider time to show its green confirmation before the page reveal.
-    if (confirmation) timer = setTimeout(navigate, 180);
+    if (delay > 0) timer = setTimeout(navigate, delay);
     else navigate();
   };
 })();

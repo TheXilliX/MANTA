@@ -13,7 +13,7 @@
 
   :root[data-wave-source='slider'] {
     --course-wave-feather: clamp(36px, 6vw, 106px);
-    --course-wave-duration: 1.4s;
+    --course-wave-duration: 1.2s;
     --course-wave-ease: cubic-bezier(.42, .12, .36, 1);
   }
 

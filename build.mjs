@@ -36,7 +36,8 @@ function page({base, title, description, content, classes, programPage=false, ho
     (!home ? '<link rel="stylesheet" href="' + base + 'assets/program.css">' : '') +
     (home || programPage ? '<link rel="stylesheet" href="' + base + 'assets/hero-motion.css">' : '') +
     (home ? '<script src="' + base + 'assets/dither.js" defer fetchpriority="high"></script>' : '') +
-    (programPage ? '<script src="' + base + 'assets/waves.js" defer></script>' : '') +
+    (programPage ? '<script src="' + base + 'assets/waves.js" defer></script>' +
+      '<script src="' + base + 'assets/program-effects.js" defer></script>' : '') +
     '<script src="' + base + 'assets/site.js" defer></script></head>' +
     '<body class="' + classes + '"><a class="skip-link" href="#main">К содержанию</a>' +
     content + '</body></html>';
@@ -59,16 +60,23 @@ function home() {
 
 function program() {
   const [mainLesson, ...resources] = sections;
+  const fuzzyWord = (word, focus = false) => '<span class="fuzzy-word" data-fuzzy' +
+    (focus ? ' data-focus-word' : '') + '><span class="fuzzy-ink">' + escapeHtml(word) + '</span></span>';
+  const brackets = '<span class="word-brackets" aria-hidden="true"></span>';
   const actionLink = (section, modifier = '') =>
     '<a class="edge-button' + (modifier ? ' ' + modifier : '') + '" href="' + lessonLink('../', section.id) +
     '" aria-label="Открыть урок — ' + escapeHtml(section.title) + '">Открыть урок</a>';
-  const items = resources.map(section => '<section class="contents-resource"><h2>' +
-    escapeHtml(section.title) + '</h2>' + actionLink(section) + '</section>').join('');
+  const items = resources.map(section => {
+    const profile = section.id === 'profile';
+    const title = profile ? section.title.split(' ').map(word => fuzzyWord(word, true)).join(' ') : fuzzyWord(section.title);
+    return '<section class="contents-resource"><h2 class="' + (profile ? 'focus-title' : 'tech-title') + '">' +
+      title + brackets + '</h2>' + actionLink(section) + '</section>';
+  }).join('');
   const main = '<main id="main" class="contents-page">' +
     '<div class="contents-scene" aria-hidden="true"><canvas class="contents-waves"></canvas>' +
     '<img class="contents-art" draggable="false" src="../assets/art/hero-ray.webp" width="1536" height="1024" alt="" fetchpriority="high"></div>' +
     '<div class="contents-layout frame"><div class="contents-lessons"><section class="contents-feature">' +
-    '<h1 lang="en">' + escapeHtml(mainLesson.title) + '</h1>' +
+    '<h1 lang="en">' + fuzzyWord(mainLesson.title) + '</h1>' +
     actionLink(mainLesson, 'edge-button--primary') +
     '</section><nav class="contents-resources" aria-label="Другие уроки">' + items + '</nav></div></div></main>';
   return page({base:'../', title:'Разделы курса — Лиды из Threads', description:'Основной урок, хуки и упаковка профиля.',
