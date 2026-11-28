@@ -77,7 +77,8 @@
   const introSeconds = 1.2;
   const introStart = 0.16;
   const pixelSize = 2;
-  const minFrameInterval = 1000 / 35;
+  const touchScreen = matchMedia('(pointer: coarse)');
+  const minFrameInterval = 1000 / (touchScreen.matches ? 31 : 35);
   const maxFieldCells = 600000;
   const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const vertexSource = `#version 300 es
@@ -316,6 +317,7 @@ void main() {
   let presence = 0;
   let viewportVisible = true;
   let frameId = 0;
+  let departing = false;
   let lastFrame = 0;
   let time = 0;
   let intro = document.documentElement.hasAttribute('data-hero-intro') ? introStart : 1;
@@ -376,7 +378,7 @@ void main() {
 
   function frame(now) {
     frameId = 0;
-    if (!program || !viewportVisible || document.hidden || motion.matches) return;
+    if (!program || !viewportVisible || departing || document.hidden || motion.matches) return;
     const elapsed = lastFrame ? now - lastFrame : minFrameInterval;
     if (elapsed >= minFrameInterval) {
       const dt = Math.min(elapsed / 1000, 0.05);
@@ -392,7 +394,7 @@ void main() {
   }
 
   function wake() {
-    if (frameId || !program || !viewportVisible || document.hidden) return;
+    if (frameId || !program || !viewportVisible || departing || document.hidden) return;
     if (motion.matches) draw();
     else frameId = requestAnimationFrame(frame);
   }
@@ -404,7 +406,7 @@ void main() {
   }
 
   function resize() {
-    if (!program) return;
+    if (!program || departing) return;
     const width = canvas.clientWidth;
     const height = canvas.clientHeight;
     if (width < 1 || height < 1) return;
@@ -471,6 +473,15 @@ void main() {
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) stop();
     else wake();
+  });
+  window.addEventListener('course-wave-start', () => {
+    departing = true;
+    stop();
+  });
+  window.addEventListener('pageshow', event => {
+    if (!event.persisted) return;
+    departing = false;
+    resize();
   });
   motion.addEventListener('change', () => {
     stop();

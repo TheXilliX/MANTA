@@ -386,7 +386,6 @@ const link = (gl, vertexSource, fragmentSource) => {
 
     const probe = document.createElement('canvas').getContext('2d', { willReadFrequently: true });
     const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const touchScreen = window.matchMedia('(pointer: coarse)');
     let reduce = motion.matches;
     const colors = new Map();
     const parse = value => {
@@ -711,7 +710,7 @@ const link = (gl, vertexSource, fragmentSource) => {
     const resize = () => {
       const width = Math.max(1, container.clientWidth);
       const height = Math.max(1, container.clientHeight);
-      const ratio = Math.min(window.devicePixelRatio || 1, touchScreen.matches ? 1.25 : 1.5);
+      const ratio = Math.min(window.devicePixelRatio || 1, 1.5);
       view.width = width;
       view.height = height;
       canvas.width = Math.max(1, Math.round(width * ratio));
@@ -821,5 +820,5 @@ const link = (gl, vertexSource, fragmentSource) => {
   }
 
   const canvas = document.querySelector('.contents-waves');
-  if (canvas) mountWaves(canvas.parentElement, canvas);
+  if (canvas && !matchMedia('(pointer: coarse)').matches) mountWaves(canvas.parentElement, canvas);
 })();

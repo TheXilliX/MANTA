@@ -15,6 +15,7 @@
   }
 
   const slide = document.querySelector('.home .hero-action a.slide-commit');
+  const touchScreen = matchMedia('(pointer: coarse)');
   const handle = slide?.querySelector('.slide-commit__handle');
   if (handle && typeof slide.setPointerCapture === 'function') {
     const hasModifier = (event) => event.metaKey || event.ctrlKey || event.shiftKey || event.altKey;
@@ -27,7 +28,7 @@
       slide.removeAttribute('data-slide-held');
       slide.style.setProperty('--slide-progress', '1');
       slide.setAttribute('data-slide-done', '');
-      window.openCoursePage(slide, { fromSlider: true, delay: 150 });
+      window.openCoursePage(slide, { fromSlider: true, delay: touchScreen.matches ? 58 : 150 });
     }
 
     function trackDrag(event) {
@@ -155,7 +156,7 @@
     clearTimeout(pressTimer);
     openingLesson.removeEventListener('animationend', finishPress);
     openingLesson.setAttribute('data-edge-filled', '');
-    window.openCoursePage(openingLesson, { delay: 45 });
+    window.openCoursePage(openingLesson, { delay: touchScreen.matches ? 0 : 45 });
   }
 
   document.addEventListener('click', event => {
@@ -177,7 +178,7 @@
     }
     link.addEventListener('animationend', finishPress);
     link.setAttribute('data-edge-commit', '');
-    pressTimer = setTimeout(finishPress, 800);
+    pressTimer = setTimeout(finishPress, touchScreen.matches ? 245 : 800);
   });
   window.addEventListener('pagehide', () => {
     clearTimeout(pressTimer);

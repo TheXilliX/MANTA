@@ -20,7 +20,7 @@
   :root[data-wave-mode='fallback'] main,
   :root[data-wave-mode='native']::view-transition-new(root) {
     --course-wave-mask: radial-gradient(
-      circle at var(--course-wave-x) var(--course-wave-y),
+      circle at var(--course-mask-x, var(--course-wave-x)) var(--course-mask-y, var(--course-wave-y)),
       #000 0 max(0px, calc(var(--course-wave-radius) - var(--course-wave-feather))),
       transparent var(--course-wave-radius)
     );
@@ -47,6 +47,8 @@
   }
 
   :root[data-wave-mode='fallback'] main {
+    --course-mask-x: calc(var(--course-wave-x) - var(--course-wave-main-x, 0px));
+    --course-mask-y: calc(var(--course-wave-y) - var(--course-wave-main-y, 0px));
     mask-image: var(--course-wave-mask);
     animation: course-open var(--course-wave-duration) var(--course-wave-ease) both;
   }
@@ -74,6 +76,15 @@
     background: var(--course-wave-light);
     mix-blend-mode: normal;
     animation: course-open var(--course-wave-duration) var(--course-wave-ease) both;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) and (pointer: coarse) {
+  :root { --course-wave-duration: .58s; }
+  :root[data-wave-source='slider'] {
+    --course-wave-feather: clamp(20px, 5vw, 42px);
+    --course-wave-duration: .84s;
+    --course-wave-ease: cubic-bezier(.28, .35, .31, 1);
   }
 }
 

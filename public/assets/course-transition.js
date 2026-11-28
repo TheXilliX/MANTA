@@ -5,9 +5,9 @@
   let pending;
   let timer;
 
-  function setOrigin({ x, y, start }) {
-    const cx = x * innerWidth;
-    const cy = y * innerHeight;
+  function setOrigin({ x, y, width, start }) {
+    const cx = width === innerWidth ? x : x * innerWidth / width;
+    const cy = y;
     const radius = Math.hypot(Math.max(cx, innerWidth - cx), Math.max(cy, innerHeight - cy));
     root.style.setProperty('--course-wave-x', cx + 'px');
     root.style.setProperty('--course-wave-y', cy + 'px');
@@ -15,12 +15,20 @@
     root.style.setProperty('--course-wave-end', Math.ceil(radius + 112) + 'px');
   }
 
+  function alignFallbackMask() {
+    const box = document.querySelector('main')?.getBoundingClientRect();
+    if (!box) return;
+    root.style.setProperty('--course-wave-main-x', box.left + 'px');
+    root.style.setProperty('--course-wave-main-y', box.top + 'px');
+  }
+
   function closeWave() {
     clearTimeout(timer);
     pending = undefined;
     delete root.dataset.waveMode;
     delete root.dataset.waveSource;
-    for (const name of ['x', 'y', 'start', 'end']) root.style.removeProperty('--course-wave-' + name);
+    for (const name of ['x', 'y', 'start', 'end', 'main-x', 'main-y']) root.style.removeProperty('--course-wave-' + name);
+    window.dispatchEvent(new Event('course-wave-end'));
   }
 
   function readWave() {
@@ -28,7 +36,7 @@
       const wave = JSON.parse(sessionStorage.getItem(key) || 'null');
       sessionStorage.removeItem(key);
       if (wave?.path === location.pathname && Date.now() - wave.time < 8000 &&
-          Number.isFinite(wave.x) && Number.isFinite(wave.y) && Number.isFinite(wave.start)) return wave;
+          Number.isFinite(wave.x) && Number.isFinite(wave.y) && Number.isFinite(wave.start) && wave.width > 0) return wave;
     } catch {
       // Storage can be unavailable in embedded previews.
     }
@@ -39,16 +47,19 @@
     setOrigin(incoming);
     if (incoming.fromSlider) root.dataset.waveSource = 'slider';
     root.dataset.waveMode = 'fallback';
+    document.addEventListener('DOMContentLoaded', alignFallbackMask, { once: true });
     window.addEventListener('pagereveal', event => {
       const view = event.viewTransition;
       if (!view) return;
       root.dataset.waveMode = 'native';
       view.ready.catch(() => {
+        alignFallbackMask();
         root.dataset.waveMode = 'fallback';
       });
-      view.finished.then(() => {
+      const finishNative = () => {
         if (root.dataset.waveMode === 'native') closeWave();
-      }, closeWave);
+      };
+      view.finished.then(finishNative, finishNative);
     }, { once: true });
     window.addEventListener('animationend', event => {
       if (event.animationName === 'course-open' && event.target.matches?.('main') &&
@@ -75,15 +86,17 @@
     }
     const url = new URL(link.href);
     const box = link.getBoundingClientRect();
-    const start = Math.round(Math.min(86, box.height * (fromSlider ? 1.26 : .78)));
+    const start = Math.round(Math.min(86, box.height * (fromSlider ? .92 : .78)));
     pending = {
-      x: (box.left + box.width / 2) / innerWidth,
-      y: (box.top + box.height / 2) / innerHeight,
+      x: box.left + box.width / 2,
+      y: box.top + box.height / 2,
+      width: innerWidth,
       start,
       fromSlider,
       path: url.pathname,
       time: 0,
     };
+    window.dispatchEvent(new Event('course-wave-start'));
     function navigate() {
       try {
         pending.time = Date.now();

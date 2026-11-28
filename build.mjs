@@ -31,6 +31,9 @@ function page({base, title, description, content, classes, programPage=false, ho
     '<style>@view-transition{navigation:auto}@media(prefers-reduced-motion:reduce){@view-transition{navigation:none}}</style>' +
     '<script src="' + base + 'assets/course-transition.js"></script>' +
     '<link rel="stylesheet" href="' + base + 'assets/course-transition.css">' +
+    (home ? '<link rel="prefetch" href="' + courseLink(base) + '" as="document">' : '') +
+    (programPage ? sections.map(section => '<link rel="prefetch" href="' + lessonLink(base, section.id) + '" as="document">').join('') : '') +
+    (programPage ? '<link rel="preload" as="image" href="' + base + 'assets/art/waves-mobile.webp" media="(pointer: coarse)">' : '') +
     (home ? '<script>if(matchMedia("(prefers-reduced-motion: no-preference)").matches&&performance.getEntriesByType("navigation")[0]?.type!=="back_forward"){document.documentElement.dataset.heroIntro="";setTimeout(()=>{if(!document.querySelector("[data-dither-ready]"))document.documentElement.dataset.heroReveal=""},1600)}</script>' : '') +
     '<link rel="stylesheet" href="' + base + 'assets/site.css">' +
     (!home ? '<link rel="stylesheet" href="' + base + 'assets/program.css">' : '') +
@@ -63,14 +66,20 @@ function program() {
   const fuzzyWord = (word, focus = false) => '<span class="fuzzy-word" data-fuzzy' +
     (focus ? ' data-focus-word' : '') + '><span class="fuzzy-ink">' + escapeHtml(word) + '</span></span>';
   const brackets = '<span class="word-brackets" aria-hidden="true"></span>';
+  const techWord = word => {
+    const letters = [...word].map(letter => '<span class="tech-letter">' + escapeHtml(letter) + '</span>').join('');
+    const guide = [...word].map(letter => '<span class="tech-letter" data-glyph="' + escapeHtml(letter) + '"></span>').join('');
+    return '<span class="fuzzy-word" data-fuzzy><span class="fuzzy-ink">' + letters +
+      '</span><span class="tech-guide" aria-hidden="true">' + guide + '</span></span>';
+  };
   const actionLink = (section, modifier = '') =>
     '<a class="edge-button' + (modifier ? ' ' + modifier : '') + '" href="' + lessonLink('../', section.id) +
     '" aria-label="Открыть урок — ' + escapeHtml(section.title) + '">Открыть урок</a>';
   const items = resources.map(section => {
     const profile = section.id === 'profile';
-    const title = profile ? section.title.split(' ').map(word => fuzzyWord(word, true)).join(' ') : fuzzyWord(section.title);
+    const title = profile ? section.title.split(' ').map(word => fuzzyWord(word, true)).join(' ') : techWord(section.title);
     return '<section class="contents-resource"><h2 class="' + (profile ? 'focus-title' : 'tech-title') + '">' +
-      title + brackets + '</h2>' + actionLink(section) + '</section>';
+      title + (profile ? brackets : '') + '</h2>' + actionLink(section) + '</section>';
   }).join('');
   const main = '<main id="main" class="contents-page">' +
     '<div class="contents-scene" aria-hidden="true"><canvas class="contents-waves"></canvas>' +
