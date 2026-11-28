@@ -25,7 +25,7 @@ const placeholders = [
 ];
 
 function page({base, title, description, content, classes, programPage=false, home=false}) {
-  return '<!doctype html>\n<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">' +
+  return '<!doctype html>\n<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">' +
     '<meta name="description" content="' + escapeHtml(description) + '"><title>' + escapeHtml(title) + '</title>' +
     '<link rel="icon" href="data:,">' +
     '<style>@view-transition{navigation:auto}@media(prefers-reduced-motion:reduce){@view-transition{navigation:none}}</style>' +
@@ -47,7 +47,7 @@ function home() {
     '<div class="dither-container" aria-hidden="true"><canvas class="dither-canvas"></canvas></div>' +
     '<section class="hero-copy frame">' +
     '<h1><span class="hero-lead">Лиды из</span> <span lang="en">Threads</span></h1>' +
-    '<div class="hero-action"><a class="primary-button slide-commit" href="' + courseLink('./') + '" draggable="false">' +
+    '<div class="hero-action"><a class="primary-button slide-commit" href="' + courseLink('./') + '" aria-label="Открыть разделы курса" draggable="false">' +
     '<span class="slide-commit__fallback">Начать</span>' +
     '<span class="slide-commit__label" aria-hidden="true">Двигай</span>' +
     '<span class="slide-commit__handle" aria-hidden="true">' + slideArrow + '</span>' +

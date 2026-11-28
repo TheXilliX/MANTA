@@ -22,7 +22,10 @@
   --white: #f5f8fc;
   --blue: #82c4ff;
   --link: #245a92;
-  --gutter: clamp(1.25rem, 4.1vw, 5rem);
+  --safe-inline: max(env(safe-area-inset-left, 0px), env(safe-area-inset-right, 0px));
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --gutter: max(clamp(1.25rem, 4.1vw, 5rem), var(--safe-inline));
   font-family: 'Google Sans', system-ui, sans-serif;
   font-synthesis: none;
   scroll-behavior: smooth;
@@ -49,7 +52,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outlin
 .header-link svg { width: 1.12rem; color: var(--accent); }
 .home {
   --hero-type: clamp(3.125rem, min(14vw, 20svh), 13.25rem);
-  --poster-gutter: clamp(1.25rem, 5.25vw, 7rem);
+  --poster-gutter: max(clamp(1.25rem, 5.25vw, 7rem), var(--safe-inline));
   position: relative;
   isolation: isolate;
   min-height: 100svh;
@@ -92,7 +95,8 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outlin
     linear-gradient(180deg, #111216aa, #11121635 27%, #11121635 83%, #11121673);
 }
 .hero-copy {
-  padding-block: clamp(1.5rem, 6svh, 4rem);
+  --hero-space: clamp(1.5rem, 6svh, 4rem);
+  padding-block: max(var(--hero-space), var(--safe-top)) max(var(--hero-space), var(--safe-bottom));
   text-align: center;
 }
 .hero-copy h1 {
@@ -354,6 +358,11 @@ blockquote { margin-block: 1.15rem .15rem; padding: .85rem 1rem .9rem; border-le
 @media (max-width: 440px) {
   .comparison div { grid-template-columns: 1fr; gap: .28rem; }
   .lesson-nav { padding-bottom: 2rem; }
+}
+@media (max-height: 480px) and (orientation: landscape) {
+  .home { --hero-type: clamp(2.5rem, min(14vw, 26svh), 6.5rem); }
+  .hero-copy { --hero-space: 1rem; }
+  .hero-action { margin-top: clamp(1.15rem, 5svh, 2rem); }
 }
 @media (prefers-reduced-motion: reduce) {
   :root { scroll-behavior: auto; }

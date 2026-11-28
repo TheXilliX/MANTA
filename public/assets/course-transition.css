@@ -17,15 +17,17 @@
     --course-wave-ease: cubic-bezier(.42, .12, .36, 1);
   }
 
-  :root[data-wave-mode='fallback']::after,
   :root[data-wave-mode='fallback'] main,
-  :root[data-wave-mode='native']::view-transition-new(root),
-  :root[data-wave-mode='native']::view-transition-new(course-glow) {
+  :root[data-wave-mode='native']::view-transition-new(root) {
     --course-wave-mask: radial-gradient(
       circle at var(--course-wave-x) var(--course-wave-y),
       #000 0 max(0px, calc(var(--course-wave-radius) - var(--course-wave-feather))),
       transparent var(--course-wave-radius)
     );
+  }
+
+  :root[data-wave-mode='fallback']:not([data-wave-source='slider'])::after,
+  :root[data-wave-mode='native']:not([data-wave-source='slider'])::view-transition-new(course-glow) {
     --course-wave-light: radial-gradient(
       circle at var(--course-wave-x) var(--course-wave-y),
       transparent 0 max(0px, calc(var(--course-wave-radius) - 28px)),
@@ -36,7 +38,7 @@
     );
   }
 
-  :root:is([data-wave-mode='fallback'], [data-wave-mode='native'])::after {
+  :root:is([data-wave-mode='fallback'], [data-wave-mode='native']):not([data-wave-source='slider'])::after {
     content: '';
     position: fixed;
     inset: 0;
@@ -49,12 +51,12 @@
     animation: course-open var(--course-wave-duration) var(--course-wave-ease) both;
   }
 
-  :root[data-wave-mode='fallback']::after {
+  :root[data-wave-mode='fallback']:not([data-wave-source='slider'])::after {
     background: var(--course-wave-light);
     animation: course-open var(--course-wave-duration) var(--course-wave-ease) both;
   }
 
-  :root[data-wave-mode='native']::after { view-transition-name: course-glow; }
+  :root[data-wave-mode='native']:not([data-wave-source='slider'])::after { view-transition-name: course-glow; }
 
   :root[data-wave-mode='native']::view-transition-group(root),
   :root[data-wave-mode='native']::view-transition-old(root),
@@ -68,7 +70,7 @@
     animation: course-open var(--course-wave-duration) var(--course-wave-ease) both;
   }
 
-  :root[data-wave-mode='native']::view-transition-new(course-glow) {
+  :root[data-wave-mode='native']:not([data-wave-source='slider'])::view-transition-new(course-glow) {
     background: var(--course-wave-light);
     mix-blend-mode: normal;
     animation: course-open var(--course-wave-duration) var(--course-wave-ease) both;

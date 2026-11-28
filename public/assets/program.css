@@ -48,10 +48,11 @@
 .contents-waves[data-ray-ready] + .contents-art { visibility: hidden; }
 
 .contents-layout {
+  --contents-space: clamp(2rem, 7svh, 6rem);
   min-height: 100svh;
   display: grid;
   align-content: center;
-  padding-block: clamp(2rem, 7svh, 6rem);
+  padding-block: max(var(--contents-space), var(--safe-top)) max(var(--contents-space), var(--safe-bottom));
 }
 
 .contents-lessons {
@@ -110,9 +111,10 @@
 }
 
 .lesson-placeholder {
+  --lesson-space: clamp(3rem, 9svh, 7rem);
   width: min(100% - 2 * var(--gutter), 76rem);
   min-height: 100svh;
-  padding-block: clamp(3rem, 9svh, 7rem);
+  padding-block: max(var(--lesson-space), var(--safe-top)) max(var(--lesson-space), var(--safe-bottom));
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -130,7 +132,12 @@
 .lesson-placeholder p { margin-top: 1.2rem; color: var(--muted); }
 .lesson-placeholder .edge-button { margin-top: 1.75rem; }
 
-@media (max-width: 760px) and (orientation: portrait) {
+@media (max-width: 1050px) and (orientation: portrait) {
+  .contents-page {
+    --contents-art-width: min(100%, 52svh, 34rem);
+    --contents-art-top: max(clamp(.5rem, 5svh, 2.75rem), var(--safe-top));
+  }
+
   .contents-scene { background-position: center top; }
 
   .contents-scene::after {
@@ -138,20 +145,21 @@
   }
 
   .contents-art {
-    width: min(104%, 52svh, 34rem);
+    width: var(--contents-art-width);
     right: auto;
     left: 50%;
-    top: clamp(.5rem, 5svh, 2.75rem);
+    top: var(--contents-art-top);
     transform: translateX(-50%);
   }
 
   .contents-layout {
     align-content: start;
-    padding-block: clamp(8.5rem, 40svh, 22rem) max(1.35rem, env(safe-area-inset-bottom));
+    padding-block: max(8.5rem, min(37svh, 25rem), calc(var(--contents-art-top) + .62 * var(--contents-art-width)))
+      max(1.35rem, var(--safe-bottom));
   }
 
   .contents-lessons {
-    width: min(100%, 29rem);
+    width: min(100%, 34rem);
     margin-inline: auto;
     gap: clamp(1.35rem, 5svh, 2.7rem);
   }
@@ -176,4 +184,13 @@
   .contents-resource .edge-button { width: 100%; }
 
   .contents-resource h2 { font-size: clamp(1.14rem, 4.8vw, 1.65rem); }
+}
+
+@media (max-height: 480px) and (orientation: landscape) {
+  .contents-art { right: max(2.4%, var(--safe-inline)); width: min(47%, 34rem); }
+  .contents-layout { --contents-space: 1.2rem; }
+  .contents-lessons { gap: clamp(1.15rem, 5svh, 2rem); }
+  .contents-feature { gap: .8rem; }
+  .contents-feature h1 { font-size: clamp(2.5rem, min(8.6vw, 15svh), 5rem); }
+  .lesson-placeholder { --lesson-space: 1.5rem; }
 }
