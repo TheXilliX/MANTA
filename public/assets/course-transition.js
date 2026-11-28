@@ -19,6 +19,7 @@
     clearTimeout(timer);
     pending = undefined;
     delete root.dataset.waveMode;
+    delete root.dataset.waveSource;
     for (const name of ['x', 'y', 'start', 'end']) root.style.removeProperty('--course-wave-' + name);
   }
 
@@ -36,6 +37,7 @@
   const incoming = readWave();
   if (incoming && !motion.matches) {
     setOrigin(incoming);
+    if (incoming.fromSlider) root.dataset.waveSource = 'slider';
     root.dataset.waveMode = 'fallback';
     window.addEventListener('pagereveal', event => {
       const view = event.viewTransition;
@@ -78,6 +80,7 @@
       x: (box.left + box.width / 2) / innerWidth,
       y: (box.top + box.height / 2) / innerHeight,
       start,
+      fromSlider: confirmation,
       path: url.pathname,
       time: 0,
     };

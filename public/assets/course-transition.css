@@ -11,6 +11,12 @@
     --course-wave-ease: cubic-bezier(.3, .55, .22, 1);
   }
 
+  :root[data-wave-source='slider'] {
+    --course-wave-feather: clamp(36px, 6vw, 106px);
+    --course-wave-duration: 1.4s;
+    --course-wave-ease: cubic-bezier(.42, .12, .36, 1);
+  }
+
   :root[data-wave-mode='fallback']::after,
   :root[data-wave-mode='fallback'] main,
   :root[data-wave-mode='native']::view-transition-new(root),
