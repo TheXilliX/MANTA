@@ -210,6 +210,7 @@ void main() {
   float field = clamp(pattern(uv + warp) - 0.5 * erase + ring * 0.55, 0.0, 1.0) * reveal;
 
   ${ray ? `
+  vec4 rayInk = vec4(0.0);
   if (uRayBounds.z > 0.0) {
     vec2 screen = (cell + 0.5) / uGrid;
     screen.y = 1.0 - screen.y;
@@ -219,9 +220,7 @@ void main() {
     field = max(field, 0.47 * exp(-2.8 * dot(light, light)));
     vec4 shape = texture(uRay, clamp(rayUv, 0.0, 1.0));
     vec2 inside = step(vec2(0.0), rayUv) * step(rayUv, vec2(1.0));
-    float markings = dot(shape.rgb, vec3(0.2126, 0.7152, 0.0722));
-    float shadow = 0.025 + 0.24 * field + 0.15 * markings;
-    field = mix(field, shadow, (0.83 + 0.1 * sin(uTime * 0.52)) * shape.a * inside.x * inside.y);
+    rayInk = vec4(shape.rgb, shape.a * inside.x * inside.y);
   }
   ` : ''}
 
@@ -232,9 +231,16 @@ void main() {
   float range = dot(uWave, luma) - base;
   float offset = range * field + threshold;
   offset -= mix(0.2, 0.0, smoothstep(0.45, 0.8, base + offset));
-  // Quantize luminance once, so each Bayer step follows the same palette.
+  // Quantize the background and the ray separately to preserve the silhouette.
   float level = floor(clamp(offset, 0.0, 1.0 - base) * levels + 0.5) / levels;
-  outColor = vec4(toSrgb(mix(uBackground, uWave, clamp(level / max(range, 0.0001), 0.0, 1.0))), 1.0);
+  vec3 color = toSrgb(mix(uBackground, uWave, clamp(level / max(range, 0.0001), 0.0, 1.0)));
+  ${ray ? `
+  float rayTone = 0.075 + 0.76 * pow(dot(rayInk.rgb, luma), 1.04);
+  float raySteps = 18.0;
+  float texturedRay = floor(rayTone * raySteps + bayer8[tile.y * 8 + tile.x]) / raySteps;
+  color = mix(color, vec3(texturedRay), rayInk.a);
+  ` : ''}
+  outColor = vec4(color, 1.0);
 }`;
 
   const compileShader = (type, source) => {

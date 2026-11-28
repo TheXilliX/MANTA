@@ -14,9 +14,9 @@ const slideCheck = svg('<path d="m5 12 4 4L19 6"/>');
 const lessonLink = (base, id) => base + 'lessons/' + id + '/';
 const courseLink = (base) => base + 'program/';
 const sections = [
-  { id: 'threads', title: 'Урок по Threads', action: 'Открыть урок' },
-  { id: 'hooks', title: 'Хуки', action: 'Смотреть хуки' },
-  { id: 'profile', title: 'Упаковка профиля', action: 'К упаковке профиля' },
+  { id: 'threads', title: 'Threads' },
+  { id: 'hooks', title: 'Хуки' },
+  { id: 'profile', title: 'Упаковка профиля' },
 ];
 const sectionIds = new Set(sections.map(section => section.id));
 const placeholders = [
@@ -57,17 +57,17 @@ function home() {
 function program() {
   const [mainLesson, ...resources] = sections;
   const actionLink = (section, modifier = '') =>
-    '<a class="edge-button ' + modifier + '" href="' + lessonLink('../', section.id) + '">' +
-    escapeHtml(section.action) + '</a>';
+    '<a class="edge-button' + (modifier ? ' ' + modifier : '') + '" href="' + lessonLink('../', section.id) +
+    '" aria-label="Открыть урок — ' + escapeHtml(section.title) + '">Открыть урок</a>';
   const items = resources.map(section => '<section class="contents-resource"><h2>' +
     escapeHtml(section.title) + '</h2>' + actionLink(section) + '</section>').join('');
   const main = '<main id="main" class="contents-page">' +
     '<div class="dither-container" aria-hidden="true"><canvas class="dither-canvas"></canvas>' +
     '<img class="contents-art" data-dither-ray src="../assets/art/hero-ray.png" width="1280" height="853" alt="" fetchpriority="high"></div>' +
-    '<div class="contents-layout frame"><section class="contents-feature">' +
-    '<h1><span>Урок по</span> <strong lang="en">Threads</strong></h1>' +
+    '<div class="contents-layout frame"><div class="contents-lessons"><section class="contents-feature">' +
+    '<h1 lang="en">' + escapeHtml(mainLesson.title) + '</h1>' +
     actionLink(mainLesson, 'edge-button--primary') +
-    '</section><nav class="contents-resources" aria-label="Дополнительные материалы">' + items + '</nav></div></main>';
+    '</section><nav class="contents-resources" aria-label="Другие уроки">' + items + '</nav></div></div></main>';
   return page({base:'../', title:'Разделы курса — Лиды из Threads', description:'Основной урок, хуки и упаковка профиля.',
     content:main, classes:'program dark', programPage:true});
 }
