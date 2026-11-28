@@ -60,6 +60,7 @@
 (() => {
   const canvas = document.querySelector('canvas.dither-canvas');
   if (!canvas) return;
+  const ray = canvas.parentElement.querySelector('[data-dither-ray]');
 
   const gl = canvas.getContext('webgl2', {
     alpha: false,
@@ -100,6 +101,7 @@ uniform vec3 uTrail[${maxTrail}];
 uniform vec4 uRipples[${maxRipples}];
 uniform int uTrailCount;
 uniform int uRippleCount;
+${ray ? 'uniform sampler2D uRay; uniform vec4 uRayBounds;' : ''}
 out vec4 outColor;
 
 const float uWaveSpeed = 0.05;
@@ -207,6 +209,22 @@ void main() {
   float reveal = smoothstep(0.0, 0.45, uIntro * reach - length(uv));
   float field = clamp(pattern(uv + warp) - 0.5 * erase + ring * 0.55, 0.0, 1.0) * reveal;
 
+  ${ray ? `
+  if (uRayBounds.z > 0.0) {
+    vec2 screen = (cell + 0.5) / uGrid;
+    screen.y = 1.0 - screen.y;
+    vec2 rayUv = (screen - uRayBounds.xy) / uRayBounds.zw;
+    rayUv.y += sin(uTime * 0.65) * 0.014;
+    vec2 light = (rayUv - vec2(0.49, 0.52)) * vec2(1.2, 1.75);
+    field = max(field, 0.47 * exp(-2.8 * dot(light, light)));
+    vec4 shape = texture(uRay, clamp(rayUv, 0.0, 1.0));
+    vec2 inside = step(vec2(0.0), rayUv) * step(rayUv, vec2(1.0));
+    float markings = dot(shape.rgb, vec3(0.2126, 0.7152, 0.0722));
+    float shadow = 0.025 + 0.24 * field + 0.15 * markings;
+    field = mix(field, shadow, (0.83 + 0.1 * sin(uTime * 0.52)) * shape.a * inside.x * inside.y);
+  }
+  ` : ''}
+
   ivec2 tile = ivec2(mod(cell, 8.0));
   float threshold = (bayer8[tile.y * 8 + tile.x] - 0.25) / levels;
   vec3 luma = vec3(0.2126, 0.7152, 0.0722);
@@ -250,13 +268,35 @@ void main() {
   let program = makeProgram();
   if (!program) return;
   let uniforms;
+  let rayTexture;
+  let rayReady = false;
   const initializeUniforms = () => {
     const names = ['uGrid', 'uAspect', 'uTime', 'uIntro', 'uWave', 'uBackground', 'uTrail[0]', 'uRipples[0]', 'uTrailCount', 'uRippleCount'];
+    if (ray) names.push('uRay', 'uRayBounds');
     uniforms = Object.fromEntries(names.map(name => [name.replace('[0]', ''), gl.getUniformLocation(program, name)]));
     gl.useProgram(program);
     gl.uniform3fv(uniforms.uWave, linearColor(230, 236, 241));
     gl.uniform3fv(uniforms.uBackground, linearColor(17, 18, 22));
+    if (ray) {
+      rayTexture = gl.createTexture();
+      gl.bindTexture(gl.TEXTURE_2D, rayTexture);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+      gl.uniform1i(uniforms.uRay, 0);
+      uploadRay();
+    }
   };
+
+  function uploadRay() {
+    if (!program || !rayTexture || !ray.complete || !ray.naturalWidth) return;
+    gl.bindTexture(gl.TEXTURE_2D, rayTexture);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, ray);
+    rayReady = true;
+  }
+
   initializeUniforms();
 
   const pointer = { active: false, seen: false, x: 0, y: 0 };
@@ -298,6 +338,7 @@ void main() {
     }
     gl.drawArrays(gl.TRIANGLES, 0, 3);
     if (!canvas.dataset.ditherReady) canvas.dataset.ditherReady = 'true';
+    if (rayReady && !canvas.dataset.rayReady) canvas.dataset.rayReady = 'true';
     if (intro >= 0.9 && !document.documentElement.hasAttribute('data-hero-reveal')) {
       document.documentElement.dataset.heroReveal = '';
     }
@@ -368,6 +409,14 @@ void main() {
     gl.viewport(0, 0, canvas.width, canvas.height);
     gl.uniform2f(uniforms.uGrid, canvas.width, canvas.height);
     gl.uniform1f(uniforms.uAspect, aspect);
+    if (rayReady) {
+      const viewport = canvas.getBoundingClientRect();
+      const image = ray.getBoundingClientRect();
+      gl.uniform4f(uniforms.uRayBounds,
+        (image.left - viewport.left) / viewport.width,
+        (image.top - viewport.top) / viewport.height,
+        image.width / viewport.width, image.height / viewport.height);
+    }
     draw();
     wake();
   }
@@ -394,6 +443,10 @@ void main() {
   }
 
   new ResizeObserver(resize).observe(canvas);
+  ray?.addEventListener('load', () => {
+    uploadRay();
+    resize();
+  });
   new IntersectionObserver(entries => {
     viewportVisible = entries.some(entry => entry.isIntersecting);
     if (viewportVisible) wake();
@@ -426,7 +479,10 @@ void main() {
     event.preventDefault();
     stop();
     program = null;
+    rayTexture = null;
+    rayReady = false;
     delete canvas.dataset.ditherReady;
+    delete canvas.dataset.rayReady;
     document.documentElement.dataset.heroReveal = '';
   });
   canvas.addEventListener('webglcontextrestored', () => {

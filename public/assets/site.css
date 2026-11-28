@@ -109,6 +109,34 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outlin
 .hero-action { margin-top: clamp(2.15rem, 6svh, 4rem); }
 .primary-button { display: inline-flex; min-height: 3.3rem; align-items: center; justify-content: center; padding: .76rem 1.25rem; background: var(--white); color: var(--coal); font-weight: 700; text-decoration: none; border: 1px solid var(--white); border-radius: .2rem; transition: background .18s, border-color .18s; }
 .primary-button:hover { background: var(--blue); border-color: var(--blue); }
+.edge-button {
+  position: relative;
+  isolation: isolate;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.75rem;
+  padding: .7rem clamp(1rem, 2.4vw, 2rem);
+  border-radius: 999px;
+  background: var(--graphite);
+  box-shadow: inset 0 0 0 1px #f5f8fc52;
+  color: var(--white);
+  font-size: clamp(.9rem, 1.45vw, 1.3rem);
+  font-weight: 700;
+  line-height: 1.15;
+  text-align: center;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.edge-button--primary {
+  --edge-core: #639fd7;
+  --edge-shine: #245a92;
+  background: var(--white);
+  color: var(--coal);
+}
+.edge-button:active { box-shadow: inset 0 0 0 2px var(--blue); }
+.edge-button--primary:active { background: var(--cloud); }
+.edge-button:focus-visible { outline-color: var(--blue); }
 @property --slide-progress {
   syntax: "<number>";
   inherits: true;
@@ -141,7 +169,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outlin
   touch-action: pan-y;
   -webkit-touch-callout: none;
 }
-.slide-commit[data-slide-ready]::before,
+:is(.slide-commit[data-slide-ready], .edge-button)::before,
 .slide-commit[data-slide-ready]::after {
   content: '';
   position: absolute;
@@ -155,15 +183,15 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outlin
   -webkit-mask-composite: xor;
   mask-composite: exclude;
 }
-.slide-commit[data-slide-ready]::before {
-  background: radial-gradient(88px circle at var(--slide-light-x, 50%) var(--slide-light-y, 50%), var(--white), var(--blue) 28%, transparent 95%);
+:is(.slide-commit[data-slide-ready], .edge-button)::before {
+  background: radial-gradient(88px circle at var(--edge-light-x, 50%) var(--edge-light-y, 50%), var(--edge-core, var(--white)), var(--edge-shine, var(--blue)) 28%, transparent 95%);
   transition: opacity .14s ease;
 }
 .slide-commit[data-slide-ready]::after {
   background: linear-gradient(90deg, var(--blue), #a6d6ff max(0px, calc(var(--slide-rim-front) - 26px)), transparent calc(var(--slide-rim-front) + 18px));
   transition: opacity .15s ease;
 }
-.slide-commit[data-slide-lit]:not([data-slide-held])::before { opacity: 1; }
+:is(.slide-commit, .edge-button)[data-edge-lit]:not([data-slide-held])::before { opacity: 1; }
 .slide-commit[data-slide-held]::after { opacity: 1; }
 .slide-commit[data-slide-ready] .slide-commit__fallback { display: none; }
 .slide-commit[data-slide-ready] .slide-commit__label {

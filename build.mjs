@@ -13,6 +13,17 @@ const slideCheck = svg('<path d="m5 12 4 4L19 6"/>');
 
 const lessonLink = (base, id) => base + 'lessons/' + id + '/';
 const courseLink = (base) => base + 'program/';
+const sections = [
+  { id: 'threads', title: 'Урок по Threads', action: 'Открыть урок' },
+  { id: 'hooks', title: 'Хуки', action: 'Смотреть хуки' },
+  { id: 'profile', title: 'Упаковка профиля', action: 'К упаковке профиля' },
+];
+const sectionIds = new Set(sections.map(section => section.id));
+const placeholders = [
+  ...sections,
+  ...lessons.filter(lesson => !sectionIds.has(lesson.id)),
+];
+
 function page({base, title, description, content, classes, programPage=false, home=false}) {
   return '<!doctype html>\n<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">' +
     '<meta name="description" content="' + escapeHtml(description) + '"><title>' + escapeHtml(title) + '</title>' +
@@ -22,7 +33,7 @@ function page({base, title, description, content, classes, programPage=false, ho
     '<link rel="stylesheet" href="' + base + 'assets/site.css">' +
     (!home ? '<link rel="stylesheet" href="' + base + 'assets/program.css">' : '') +
     (home || programPage ? '<link rel="stylesheet" href="' + base + 'assets/hero-motion.css">' : '') +
-    (home ? '<script src="' + base + 'assets/dither.js" defer fetchpriority="high"></script>' : '') +
+    (home || programPage ? '<script src="' + base + 'assets/dither.js" defer fetchpriority="high"></script>' : '') +
     '<script src="' + base + 'assets/site.js" defer></script></head>' +
     '<body class="' + classes + '"><a class="skip-link" href="#main">К содержанию</a>' +
     content + '</body></html>';
@@ -44,22 +55,29 @@ function home() {
 }
 
 function program() {
-  const items = lessons.map(chapter => '<li><a class="course-row" href="' + lessonLink('../', chapter.id) + '">' +
-    escapeHtml(chapter.title) + '<span aria-hidden="true">↗</span></a></li>').join('');
-  const main = '<main id="main" class="contents-page frame">' +
-    '<header class="contents-heading"><p>Лиды из <span lang="en">Threads</span></p><h1>Оглавление</h1></header>' +
-    '<div class="contents-art" aria-hidden="true"><img src="../assets/art/contents-poster.webp" width="800" height="1200" alt="" fetchpriority="high"></div>' +
-    '<nav aria-label="Уроки"><ul class="contents-list">' + items + '</ul></nav></main>';
-  return page({base:'../', title:'Оглавление — Лиды из Threads', description:'Оглавление курса по Threads.',
+  const [mainLesson, ...resources] = sections;
+  const actionLink = (section, modifier = '') =>
+    '<a class="edge-button ' + modifier + '" href="' + lessonLink('../', section.id) + '">' +
+    escapeHtml(section.action) + '</a>';
+  const items = resources.map(section => '<section class="contents-resource"><h2>' +
+    escapeHtml(section.title) + '</h2>' + actionLink(section) + '</section>').join('');
+  const main = '<main id="main" class="contents-page">' +
+    '<div class="dither-container" aria-hidden="true"><canvas class="dither-canvas"></canvas>' +
+    '<img class="contents-art" data-dither-ray src="../assets/art/hero-ray.png" width="1280" height="853" alt="" fetchpriority="high"></div>' +
+    '<div class="contents-layout frame"><section class="contents-feature">' +
+    '<h1><span>Урок по</span> <strong lang="en">Threads</strong></h1>' +
+    actionLink(mainLesson, 'edge-button--primary') +
+    '</section><nav class="contents-resources" aria-label="Дополнительные материалы">' + items + '</nav></div></main>';
+  return page({base:'../', title:'Разделы курса — Лиды из Threads', description:'Основной урок, хуки и упаковка профиля.',
     content:main, classes:'program dark', programPage:true});
 }
 
 function lessonPage(chapter) {
   const base = '../../';
   const main = '<main id="main" class="lesson-placeholder frame"><h1>' + escapeHtml(chapter.title) +
-    '</h1><p>Урок в подготовке.</p><a href="' + courseLink(base) + '">К оглавлению</a></main>';
-  return page({base, title:chapter.title + ' — Лиды из Threads', description:'Урок в подготовке.',
-    content:main, classes:'light'});
+    '</h1><p>Материал в подготовке.</p><a class="edge-button" href="' + courseLink(base) + '">К разделам</a></main>';
+  return page({base, title:chapter.title + ' — Лиды из Threads', description:'Материал в подготовке.',
+    content:main, classes:'dark'});
 }
 
 await access(new URL('dither.js', assets));
@@ -77,8 +95,8 @@ async function output(folder, text) {
 await Promise.all([
   output('./', home()),
   output('program/', program()),
-  ...lessons.map(chapter => output('lessons/' + chapter.id + '/', lessonPage(chapter))),
+  ...placeholders.map(chapter => output('lessons/' + chapter.id + '/', lessonPage(chapter))),
 ]);
 await writeFile(dist('.nojekyll'), '');
-console.log('Built ' + (lessons.length + 2) + ' pages in ' + join('dist', ''));
+console.log('Built ' + (placeholders.length + 2) + ' pages in ' + join('dist', ''));
 
