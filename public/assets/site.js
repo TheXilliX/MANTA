@@ -109,23 +109,16 @@
         const [px, py] = pointer;
         const x = Math.max(0, Math.min(width, px - left));
         const y = Math.max(0, Math.min(height, py - top));
-        const follow = control.closest('.contents-lessons');
-        if (follow) {
-          const radius = Math.min(width, height) / 2;
-          const axle = Math.max(radius, Math.min(width - radius, px - left));
-          const dx = px - left - axle;
-          const dy = py - top - height / 2;
-          const reach = Math.hypot(dx, dy);
-          const distance = Math.max(0, reach - radius);
-          const edgeX = axle + radius * (reach ? dx / reach : 0);
-          const edgeY = height / 2 + radius * (reach ? dy / reach : -1);
-          control.style.setProperty('--edge-light-x', edgeX + 'px');
-          control.style.setProperty('--edge-light-y', edgeY + 'px');
-          control.style.setProperty('--edge-strength', String(.26 + .74 * Math.exp(-distance / 132)));
+        const distance = Math.hypot(px - left - x, py - top - y);
+        if (control.closest('.contents-lessons')) {
+          // Blend toward the center near the button so the two edges share the light.
+          const lightY = y + (height / 2 - y) * Math.exp(-distance / 42);
+          control.style.setProperty('--edge-light-x', x + 'px');
+          control.style.setProperty('--edge-light-y', lightY + 'px');
+          control.style.setProperty('--edge-strength', String(Math.exp(-distance / 132)));
           control.style.setProperty('--edge-white', Math.round(100 * Math.exp(-distance / 48)) + '%');
           return;
         }
-        const distance = Math.hypot(px - left - x, py - top - y);
         if (control.matches('[data-slide-held], [data-slide-done]') ||
             (control !== slide && distance > 64)) {
           if (control.hasAttribute('data-edge-lit')) clearEdgeGlow(control);

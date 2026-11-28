@@ -3,16 +3,15 @@
   const touchScreen = matchMedia('(pointer: coarse)');
   const focusTitle = document.querySelector('.focus-title');
   const focusWords = [...focusTitle.querySelectorAll('[data-focus-word]')];
-  const words = [...document.querySelectorAll('[data-fuzzy]')].flatMap(word => {
-    const canvas = document.createElement('canvas');
-    const source = document.createElement('canvas');
-    const context = canvas.getContext('2d');
-    const ink = source.getContext('2d');
-    if (!context || !ink) return [];
+  const title = document.querySelector('[data-fuzzy]');
+  const canvas = document.createElement('canvas');
+  const source = document.createElement('canvas');
+  const context = canvas.getContext('2d');
+  const ink = source.getContext('2d');
+  if (context && ink) {
     canvas.setAttribute('aria-hidden', 'true');
-    word.append(canvas);
-    return [{ word, canvas, source, context, ink, lead: Boolean(word.closest('h1')) }];
-  });
+    title.append(canvas);
+  }
   const focusHold = 1700;
   let current = 0;
   let pinned = false;
@@ -22,6 +21,9 @@
   let ready = false;
   let departing = false;
   let leadPressed = false;
+  let strip = 0;
+  let idleAmount = 0;
+  let activeAmount = 0;
 
   function setFocus(index) {
     if (motion.matches) return;
@@ -37,22 +39,23 @@
     nextFocus = performance.now() + focusHold;
   }
 
-  function measure(item) {
-    const { word, canvas, source, ink } = item;
-    const style = getComputedStyle(word);
-    const box = word.getBoundingClientRect();
+  function measureTitle() {
+    if (!context || !ink) return;
+    const style = getComputedStyle(title);
+    const box = title.getBoundingClientRect();
     if (!box.width || !box.height) return;
     const size = parseFloat(style.fontSize);
     const ratio = Math.min(devicePixelRatio || 1, 1.5);
-    const pad = Math.ceil(Math.max(7, size * .11));
+    const active = Math.min(16, size * .156);
+    const pad = Math.ceil(Math.max(8, active + 2));
     canvas.width = source.width = Math.ceil((box.width + 2 * pad) * ratio);
     canvas.height = source.height = Math.ceil((box.height + 2 * pad) * ratio);
-    word.style.setProperty('--fuzzy-padding', pad + 'px');
+    title.style.setProperty('--fuzzy-padding', pad + 'px');
     ink.setTransform(ratio, 0, 0, ratio, 0, 0);
     ink.font = style.fontWeight + ' ' + style.fontSize + ' ' + style.fontFamily;
     if ('letterSpacing' in ink) ink.letterSpacing = style.letterSpacing;
     ink.fillStyle = style.color;
-    const plain = word.querySelector('.fuzzy-ink').textContent;
+    const plain = title.querySelector('.fuzzy-ink').textContent;
     const text = style.textTransform === 'uppercase' ? plain.toUpperCase() : plain;
     const metrics = ink.measureText(text);
     const ascent = metrics.fontBoundingBoxAscent ?? size * .8;
@@ -61,22 +64,22 @@
     ink.translate(pad, baseline);
     ink.scale(box.width / Math.max(1, metrics.width), 1);
     ink.fillText(text, 0, 0);
-    item.strip = Math.max(1, Math.round(ratio * (touchScreen.matches ? 2.5 : item.lead ? 2 : 1.35)));
-    item.amount = ratio * (item.lead ? Math.min(3.4, size * .034) : Math.min(1.25, size * .033));
+    strip = Math.max(1, Math.round(ratio * (touchScreen.matches ? 2.5 : 2)));
+    idleAmount = ratio * Math.min(2.25, size * .023);
+    activeAmount = ratio * active;
   }
 
-  function draw(item) {
-    const { word, canvas, source, context, amount, strip, lead } = item;
+  function drawTitle() {
     if (!strip) return;
-    const boost = lead && (touchScreen.matches ? leadPressed : word.matches(':hover'));
-    const range = amount * (boost ? 3.9 : 1);
+    const boost = touchScreen.matches ? leadPressed : title.matches(':hover');
+    const range = boost ? activeAmount : idleAmount;
     context.clearRect(0, 0, canvas.width, canvas.height);
     for (let row = 0; row < canvas.height; row += strip) {
       const height = Math.min(strip, canvas.height - row);
       const offset = Math.round((Math.random() * 2 - 1) * range);
       context.drawImage(source, 0, row, canvas.width, height, offset, row, canvas.width, height);
     }
-    if (!word.hasAttribute('data-fuzzy-ready')) word.setAttribute('data-fuzzy-ready', '');
+    if (!title.hasAttribute('data-fuzzy-ready')) title.setAttribute('data-fuzzy-ready', '');
   }
 
   function tick(now) {
@@ -84,7 +87,7 @@
     if (motion.matches || departing || document.hidden) return;
     if (!pinned && now >= nextFocus) setFocus((current + 1) % focusWords.length);
     if (now - lastDraw >= (touchScreen.matches ? 66 : 34)) {
-      words.forEach(draw);
+      drawTitle();
       lastDraw = now;
     }
     frame = requestAnimationFrame(tick);
@@ -101,7 +104,7 @@
   function refresh() {
     if (!ready || motion.matches || departing) return;
     if (touchScreen.matches && document.documentElement.hasAttribute('data-wave-mode')) return;
-    words.forEach(measure);
+    measureTitle();
     setFocus(current);
     wake();
   }
@@ -118,8 +121,7 @@
     });
   });
 
-  const lead = words.find(item => item.lead);
-  lead?.word.addEventListener('pointerdown', event => {
+  title.addEventListener('pointerdown', event => {
     if (event.pointerType !== 'touch') return;
     leadPressed = true;
     lastDraw = 0;
@@ -153,7 +155,7 @@
 
   const observer = new ResizeObserver(refresh);
   observer.observe(focusTitle);
-  words.forEach(({ word }) => observer.observe(word));
+  observer.observe(title);
   document.fonts.ready.then(() => {
     ready = true;
     refresh();
